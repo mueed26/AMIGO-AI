@@ -20,6 +20,7 @@ function AgentsPage() {
                         <MyAgents />
                     </TabsContent>
                 </Tabs>
+                
             </div>
         </div>
     )

@@ -33,6 +33,7 @@ export function AppSidebar() {
                 <Image src={"/logo.svg"} alt="logo" width={40} height={40} />
                 <h2 className="font-semibold text-lg text-slate-900 ">AMIGO AI</h2>
             </SidebarHeader>
+            
             <SidebarContent>
                 <SidebarGroup className="flex gap-1">
                     <SidebarGroupLabel>Workspace</SidebarGroupLabel>

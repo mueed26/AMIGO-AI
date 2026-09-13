@@ -29,6 +29,7 @@ function Provider({
     }, [isLoaded, isSignedIn])
 
     //just call the api once for all the details and then share across app using useDETAILCONETXT
+    
     const createNewUser = async () => {
         const result = await axios.post('/api/users');
         console.log(result);

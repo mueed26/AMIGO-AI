@@ -17,6 +17,7 @@ const quickSuggestions = [
     },
     {
         label: "Inbox Summary",
+        
         prompt: "Check my inbox and summarize the most important emails, especially anything that requires my reply or attention.",
     },
     {
