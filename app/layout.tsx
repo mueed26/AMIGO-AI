@@ -1,36 +1,36 @@
+/**
+ * Root layout that wires global providers, Clerk, fonts, and application metadata.
+ */
 import { ClerkProvider } from '@clerk/nextjs';
 import "./globals.css";
 import type { Metadata } from "next";
-
+import { Figtree } from 'next/font/google'
+import { Toaster } from '@/components/ui/toast';
+import Provider from './provider';
 export const metadata: Metadata = {
-  title: "Next.js Premium Startup Boilerplate",
-  description: "Created using the ultimate interactive Next.js stack generator CLI.",
+  title: "AMIGO AI ",
+  description: " run AI agents for everyday operations.",
 };
 
-const isClerkConfigured = 
-  !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && 
-  !!process.env.CLERK_SECRET_KEY;
+const figTree = Figtree({ subsets: ['latin'] })
+
+
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  if (!isClerkConfigured) {
-    return (
-      <html lang="en">
-        <body style={{ margin: 0, padding: 0 }}>
-          {children}
-        </body>
-      </html>
-    );
-  }
+
 
   return (
     <ClerkProvider>
       <html lang="en">
-        <body style={{ margin: 0, padding: 0 }}>
-          {children}
+        <body style={{ margin: 0, padding: 0 }} className={figTree.className}>
+          <Provider>
+            {children}
+          </Provider>
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>
