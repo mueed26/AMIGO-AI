@@ -3,7 +3,9 @@
  */
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-'
+import CreateAgent from '@/components/custom/agents/CreateAgent'
+import MyAgents from './MyAgents'
+
 function AgentsPage() {
     return (
         <div className='w-full flex justify-center'>
@@ -24,6 +26,6 @@ function AgentsPage() {
             </div>
         </div>
     )
-}
 
+}
 export default AgentsPage

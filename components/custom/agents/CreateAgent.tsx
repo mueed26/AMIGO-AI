@@ -9,6 +9,8 @@ import { ArrowUp, BriefcaseBusiness, Loader2, Loader2Icon, Mail, Plus, Search } 
 import React, { useState } from 'react'
 
 import { toast } from '@/components/ui/toast'
+import NewAgentCard from '@/app/dashboard/agents/NewAgentCard'
+import AIAgentQuestions from '@/app/dashboard/agents/AIAgentQuestions'
 
 const quickSuggestions = [
     {

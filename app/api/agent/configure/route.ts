@@ -6,6 +6,8 @@ import { currentUser } from "@clerk/nextjs/server";
 import { and, count, desc, eq } from "drizzle-orm";
 import { AgentConfigRespSchema } from "@/data/ResponseSchema";
 import { AgentConfigSystemPrompt } from "@/data/Prompt";
+import { AgentConfig, db, tools } from "@/db";
+import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 
 
 
@@ -74,7 +76,7 @@ export async function POST(req: NextRequest) {
             const agentId = crypto.randomUUID();
             const dbResult = await db.insert(AgentConfig).values({
                 ...aiOutput.config,
-                agentImage: 'https://api.dicebear.com/10.x/gaze/svg?tags=animation&seed=' + agentId,
+                agentImage: 'https://api.dicebear.com/10.x/bottts/svg?seed=4hwns28e' + agentId,
                 agentId: agentId,
                 userEmail: userEmail,
                 schedule: {
