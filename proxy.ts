@@ -3,8 +3,6 @@
  * anything under dashboard our default route shodul first pass the middleware to check if we logged in or not
  */
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-
 const isProtectedRoute = createRouteMatcher([
   "/dashboard",
   "/dashboard/:path*",
@@ -16,8 +14,6 @@ export default clerkMiddleware(async (auth, req) => {
 })
 
 export const config = {
-
-  
   //skill all the statis files like image and css fot the middleware
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params

@@ -15,9 +15,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-import { CreatedAgentType } from '@/components/custom/agents/CreateAgent'
 import AgentEditSheet from './AgentEditSheet'
+import { CreatedAgentType } from './CreateAgent'
+
+
 type Props = {
     createdAgent: CreatedAgentType | null,
     setUpdatedAgent: any

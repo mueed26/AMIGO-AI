@@ -61,5 +61,67 @@ export const AgentConfig = pgTable("agentConfig", {
 })
 
 
+//for all upcoming schdule
+export const AgentRun = pgTable(
+  "agentRun",
+  {
+    id: uuid("id")
+      .defaultRandom()
+      .primaryKey(),
+
+    agentId: varchar("agentId")
+      .notNull()
+      .references(() => AgentConfig.agentId),
+
+    userEmail: text("email").notNull(),
+
+    scheduledFor: timestamp("scheduled_for", {
+      withTimezone: true,
+    }).notNull(),
+
+    timezone: varchar("timezone", {
+      length: 100,
+    }).notNull(),
+
+    status: varchar("status")
+      .default("scheduled")
+      .notNull(),
+
+    output: jsonb("output"),
+    error: text("error"),
+
+    queuedAt: timestamp("queued_at", {
+      withTimezone: true,
+    }),
+
+    startedAt: timestamp("started_at", {
+      withTimezone: true,
+    }),
+
+    completedAt: timestamp("completed_at", {
+      withTimezone: true,
+    }),
+
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  table => [
+    // Prevent duplicate scheduled records for the same agent/time pair.
+    uniqueIndex("unique_agent_occurrence").on(
+      table.agentId,
+      table.scheduledFor,
+    ),
+
+    // Speeds up the scheduler query that scans by status and scheduled time.
+    index("agent_run_schedule_lookup").on(
+      table.status,
+      table.scheduledFor,
+    ),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

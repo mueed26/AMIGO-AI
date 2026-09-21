@@ -9,8 +9,8 @@ import { ArrowUp, BriefcaseBusiness, Loader2, Loader2Icon, Mail, Plus, Search } 
 import React, { useState } from 'react'
 
 import { toast } from '@/components/ui/toast'
-import NewAgentCard from '@/app/dashboard/agents/NewAgentCard'
-import AIAgentQuestions from '@/app/dashboard/agents/AIAgentQuestions'
+import NewAgentCard from '@/components/custom/agents/NewAgentCard'
+import AIAgentQuestions from '@/components/custom/agents/AIAgentQuestions'
 
 const quickSuggestions = [
     {
@@ -19,7 +19,7 @@ const quickSuggestions = [
     },
     {
         label: "Inbox Summary",
-        
+
         prompt: "Check my inbox and summarize the most important emails, especially anything that requires my reply or attention.",
     },
     {

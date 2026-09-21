@@ -5,11 +5,11 @@ import { ClerkProvider } from '@clerk/nextjs';
 import "./globals.css";
 import type { Metadata } from "next";
 import { Figtree } from 'next/font/google'
-import { Toaster } from '@/components/ui/toast';
 import Provider from './provider';
+import { Toaster } from '@/components/ui/toast';
 export const metadata: Metadata = {
-  title: "AMIGO AI ",
-  description: " run AI agents for everyday operations.",
+  title: "AMIGO AI",
+  description: "Create, schedule, and run AI agents for everyday operations.",
 };
 
 const figTree = Figtree({ subsets: ['latin'] })
@@ -30,7 +30,6 @@ export default function RootLayout({
           <Provider>
             {children}
           </Provider>
-          
           <Toaster />
         </body>
       </html>
