@@ -1,5 +1,6 @@
 "use client"
 
+import { UserDetailContext } from '@/context/UserDetailContext';
 /**
  * Client provider layer for theme, sidebar state, user data, and toast rendering.
  */
@@ -9,7 +10,7 @@
 import { useUser } from '@clerk/nextjs';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
-import { UserDetailContext } from './context/UserDetailContext';
+
 
 function Provider({
     children,

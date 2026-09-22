@@ -6,8 +6,9 @@ import { currentUser } from "@clerk/nextjs/server";
 import { and, count, desc, eq } from "drizzle-orm";
 import { AgentConfigRespSchema } from "@/data/ResponseSchema";
 import { AgentConfigSystemPrompt } from "@/data/Prompt";
-import { AgentConfig, db, tools } from "@/db";
+import { AgentConfig, AgentRun, db, tools } from "@/db";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
+import { calculateNextDailyRun } from "@/lib/agent-schedule";
 
 
 

@@ -3,9 +3,10 @@
  */
 import { serve } from "inngest/next";
 import { inngest } from "../../../inngest/client";
+import { ExecuteScheduledAgent, ProcessScheduledAgent } from "@/inngest/functions";
 
 export const { GET, POST, PUT } = serve({
     client: inngest,
     //add injest fucntions here
-    functions: [],
+    functions: [ProcessScheduledAgent,ExecuteScheduledAgent],
 });

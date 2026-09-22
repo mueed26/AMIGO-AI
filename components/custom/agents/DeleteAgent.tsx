@@ -1,7 +1,7 @@
 /**
  * dialog deletes an agent and its scheduled run records.
  */
-import React, { useState } from 'react'
+import  { useState } from 'react'
 import {
     AlertDialog,
     AlertDialogAction,

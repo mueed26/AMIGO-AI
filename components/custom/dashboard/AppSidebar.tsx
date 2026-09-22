@@ -1,6 +1,6 @@
 "use client"
 
-import { UserDetailContext } from "@/app/context/UserDetailContext"
+
 /**
  * Dashboard sidebar navigation with account, route, and sign-out controls.
  */
@@ -14,6 +14,7 @@ import {
     SidebarHeader,
     SidebarMenuButton,
 } from "@/components/ui/sidebar"
+import { UserDetailContext } from "@/context/UserDetailContext"
 
 import { UserButton } from "@clerk/nextjs"
 import { AppWindow, Blocks, Bot, Layers, Play, Settings, User2 } from "lucide-react"

@@ -3,12 +3,10 @@
  */
 import { AgentConfig, AgentRun, db } from "@/db";
 import { inngest } from "@/inngest/client";
-import { deductUsageCredit, refundUsageCredit } from "@/lib/credits";
 import { executeAgent } from "@/lib/execute-agent";
 import { currentUser } from "@clerk/nextjs/server";
 import { and, eq, inArray } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
-
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
