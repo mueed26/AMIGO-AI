@@ -1,7 +1,7 @@
 /**
  * dialog deletes an agent and its scheduled run records.
  */
-import  { useState } from 'react'
+import { useState } from 'react'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -35,10 +35,8 @@ function DeleteAgent({ openAlert, agentId, closeAlert, refreshData }: props) {
         });
 
         if (result?.data?.error) {
-            toast.add({
-                type: 'error',
-                title: result?.data?.error
-            })
+            const message = typeof result?.data?.error === 'string' ? result.data.error : 'Unable to delete agent.';
+            toast.add({ type: 'error', title: message })
             return;
         }
 

@@ -11,7 +11,7 @@ import {
     SheetClose,
     SheetContent,
     SheetDescription,
-    
+
     SheetFooter,
     SheetHeader,
     SheetTitle,
@@ -169,10 +169,8 @@ function AgentEditSheet({
         })
         console.log(result.data);
         if (result.data?.error) {
-            toast.add({
-                type: 'error',
-                title: result.data?.error,
-            });
+            const message = typeof result.data.error === 'string' ? result.data.error : 'Unable to update agent.';
+            toast.add({ type: 'error', title: message });
             return;
         }
         //Update Updated Agent to parent 
@@ -215,12 +213,9 @@ function AgentEditSheet({
         })
 
         if (result.data.error) {
-            toast.add({
-                type: 'error',
-                title: result.data.error
-            })
+            const message = typeof result.data.error === 'string' ? result.data.error : 'Unable to disconnect tool.';
+            toast.add({ type: 'error', title: message })
             setDisconnectToolLoading(false);
-
             return;
         }
         toast.add({

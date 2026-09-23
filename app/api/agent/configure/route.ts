@@ -115,10 +115,10 @@ export async function POST(req: NextRequest) {
 
 
         return NextResponse.json(JSON.parse(response.text ?? '{}'));
-
     } catch (e) {
         console.error('Error', e);
-        return NextResponse.json({ error: e }, { status: 500 })
+        const message = e instanceof Error ? e.message : String((e as any)?.message ?? e);
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 
 }

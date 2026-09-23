@@ -22,7 +22,8 @@ import axios from "axios"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { toast } from "@/components/ui/toast"
-import { UserDetailContext } from "@/app/context/UserDetailContext"
+import { UserDetailContext } from "@/context/UserDetailContext"
+
 
 type Props = {
     agent: CreatedAgentType | null

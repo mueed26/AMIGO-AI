@@ -68,15 +68,13 @@ export async function POST(req: NextRequest) {
         }
         catch (e) {
             await refundUsageCredit(userEmail);
-
-            await db.update(AgentRun)
-                .set({
-                    status: 'failed',
-                    error: 'Error',
-                    completedAt: new Date()
-                }).where(eq(AgentRun.id, run.id));
-
-            return NextResponse.json({ error: e }, { status: 500 })
+            const message = e instanceof Error ? e.message : String((e as any)?.message ?? e);
+            await db.update(AgentRun).set({
+                status: 'failed',
+                error: message,
+                completedAt: new Date()
+            }).where(eq(AgentRun.id, run.id));
+            return NextResponse.json({ error: message }, { status: 500 })
         }
 
     }

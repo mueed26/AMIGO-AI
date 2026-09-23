@@ -18,15 +18,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Calendar, CalendarClockIcon, Ellipsis, MessageCircle, Pause, Pencil, Play, PlaySquareIcon, Trash } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-
-
 import { toast } from '@/components/ui/toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { UserDetailContext } from '@/app/context/UserDetailContext';
 import { CreatedAgentType } from '@/components/custom/agents/CreateAgent';
 import AgentChatDrawer from '@/components/custom/agents/AgentChatDrawer';
 import AgentEditSheet from './AgentEditSheet';
 import DeleteAgent from './DeleteAgent';
+import { UserDetailContext } from '@/context/UserDetailContext';
+
 
 
 
