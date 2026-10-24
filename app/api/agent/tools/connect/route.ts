@@ -3,11 +3,10 @@
  */
 
 //thsi file handles thereal OAuth
-import { AgentConfig, db } from "@/db";
 import { composio } from "@/lib/composio";
 import { getActiveConnectedAccounts, getOrCreateAgentSession } from "@/lib/get-agent-composio-session";
+import { getOwnedAgent } from "@/lib/get-owned-agent";
 import { currentUser } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -19,12 +18,16 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ 'error': 'Unauthorized User' }, { status: 400 })
         }
 
-        const agentConfig = await db.select().from(AgentConfig)
-            .where(eq(AgentConfig.agentId, agentId));
+        const userEmail = user?.primaryEmailAddress?.emailAddress ?? '';
+        const agentConfig = await getOwnedAgent(agentId, userEmail);
+
+        if (!agentConfig) {
+            return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+        }
 
         //@ts-ignore
-        const session = await getOrCreateAgentSession(agentConfig[0], user?.primaryEmailAddress?.emailAddress)
-        const connectedAccounts = await getActiveConnectedAccounts(user?.primaryEmailAddress?.emailAddress ?? '', [toolSlug]);
+        const session = await getOrCreateAgentSession(agentConfig, userEmail)
+        const connectedAccounts = await getActiveConnectedAccounts(userEmail, [toolSlug]);
 
         if (connectedAccounts[toolSlug.toLowerCase()]) {
             await session.update({ connectedAccounts });
@@ -44,12 +47,22 @@ export async function POST(req: NextRequest) {
 }
 export async function DELETE(req: NextRequest) {
     try {
+        const user = await currentUser();
+        const userEmail = user?.primaryEmailAddress?.emailAddress ?? '';
+
+        if (!userEmail) {
+            return NextResponse.json({ error: 'Unauthorized User' }, { status: 401 })
+        }
+
         const { toolSlug, agentId } = await req.json();
 
-        const result = await db.select().from(AgentConfig)
-            .where(eq(AgentConfig.agentId, agentId));
+        const agentConfig = await getOwnedAgent(agentId, userEmail);
 
-        const compositonSessionId = result[0].composioSessionId;
+        if (!agentConfig) {
+            return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+        }
+
+        const compositonSessionId = agentConfig.composioSessionId;
         const session = await composio.use(compositonSessionId ?? '')
         const toolKits = await session.toolkits();
         const toolKit = toolKits.items.find((item: any) => item.slug.toLowerCase() === toolSlug.toLowerCase());

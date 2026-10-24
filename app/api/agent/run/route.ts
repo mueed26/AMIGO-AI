@@ -1,9 +1,11 @@
 /**
- * API route for manual and chat-triggered agent execution, including credit checks and queueing.
+ * API route for manual and chat-triggered agent execution and queueing.
  */
-import { AgentConfig, AgentRun, db } from "@/db";
+import type { CreatedAgentType } from "@/components/custom/agents/CreateAgent";
+import { AgentRun, db } from "@/db";
 import { inngest } from "@/inngest/client";
 import { executeAgent } from "@/lib/execute-agent";
+import { getOwnedAgent } from "@/lib/get-owned-agent";
 import { currentUser } from "@clerk/nextjs/server";
 import { and, eq, inArray } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
@@ -12,20 +14,18 @@ export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
     const user = await currentUser();
-    const { agentConfig, agentId, input } = await req.json();
+    const { agentId, input } = await req.json();
     const userEmail = user?.primaryEmailAddress?.emailAddress ?? '';
 
     if (!userEmail) {
         return NextResponse.json({ error: 'Unauthorized User' }, { status: 401 })
     }
 
-    let AgentConfigData = agentConfig;
+    // Always load the agent from the DB so users can only run their own agents.
+    const AgentConfigData = await getOwnedAgent(agentId, userEmail);
 
     if (!AgentConfigData) {
-        const result = await db.select().from(AgentConfig)
-            .where(eq(AgentConfig.agentId, agentId));
-
-        AgentConfigData = result[0];
+        return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
     }
 
     if (input == null) {
@@ -33,26 +33,20 @@ export async function POST(req: NextRequest) {
         // Manual dashboard runs are queued through Inngest so long jobs do not
         // block the API request lifecycle.
         const isAgentRunning = await db.select().from(AgentRun)
-            .where(and(eq(AgentRun.agentId, AgentConfigData?.agentId), inArray(AgentRun.status, ['queued', 'running'])))
+            .where(and(eq(AgentRun.agentId, AgentConfigData.agentId), inArray(AgentRun.status, ['queued', 'running'])))
 
         if (isAgentRunning.length != 0) {
             return NextResponse.json({ error: 'Agent already running!' }, { status: 400 })
         }
 
-        // Deduct before queueing. If the event cannot be sent, the catch block refunds it.
-        const creditBalance = await deductUsageCredit(userEmail);
-
-        if (!creditBalance) {
-            return NextResponse.json({ error: 'Insufficient credit balance.' }, { status: 402 })
-        }
-
         const now = new Date();
+        const schedule = AgentConfigData.schedule as { timezone?: string } | null;
         const insertAgentRun = await db.insert(AgentRun)
             .values({
-                agentId: AgentConfigData?.agentId,
+                agentId: AgentConfigData.agentId,
                 userEmail: userEmail,
                 scheduledFor: now,
-                timezone: AgentConfigData?.schedule?.timezone,
+                timezone: schedule?.timezone ?? 'UTC',
                 status: 'queued',
                 queuedAt: now
             }).returning();
@@ -67,7 +61,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ msg: 'Agent running' }, { status: 200 })
         }
         catch (e) {
-            await refundUsageCredit(userEmail);
             const message = e instanceof Error ? e.message : String((e as any)?.message ?? e);
             await db.update(AgentRun).set({
                 status: 'failed',
@@ -79,15 +72,9 @@ export async function POST(req: NextRequest) {
 
     }
 
-    // Chat-style runs execute immediately and still consume one usage credit.
-    const creditBalance = await deductUsageCredit(userEmail);
-
-    if (!creditBalance) {
-        return NextResponse.json({ error: 'Insufficient credit balance.' }, { status: 402 })
-    }
-
+    // Chat-style runs execute immediately.
     const result = await executeAgent({
-        agentConfig: AgentConfigData,
+        agentConfig: AgentConfigData as unknown as CreatedAgentType,
         userEmail: userEmail,
         input: input ?? null
     })

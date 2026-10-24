@@ -1,10 +1,9 @@
 /**
  * API route that returns tool metadata and connection state for an agent, to show in frontend where its connected or not.
  */
-import { AgentConfig, db } from "@/db";
 import { getOrCreateAgentSession } from "@/lib/get-agent-composio-session";
+import { getOwnedAgent } from "@/lib/get-owned-agent";
 import { currentUser } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -16,14 +15,17 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized User' }, { status: 400 })
     }
 
-    // Fetch the saved allowed tool slugs before asking Composio for live status.
-    const result = await db.select().from(AgentConfig)
-        .where(eq(AgentConfig.agentId, agentId ?? ''));
+    const userEmail = user?.primaryEmailAddress?.emailAddress ?? '';
 
-    const agentConfig = result[0];
+    // Fetch the saved allowed tool slugs before asking Composio for live status.
+    const agentConfig = await getOwnedAgent(agentId, userEmail);
+
+    if (!agentConfig) {
+        return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
     const allowedTools: any = agentConfig?.tools;
     //@ts-ignore
-    const session = await getOrCreateAgentSession(agentConfig, user?.primaryEmailAddress?.emailAddress)
+    const session = await getOrCreateAgentSession(agentConfig, userEmail)
     const toolKitResult = await session.toolkits();
 
     // Preserve the agent's configured order while attaching current connection data.

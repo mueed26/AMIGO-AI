@@ -3,16 +3,13 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { AgentConfigRespSchema } from "@/data/ResponseSchema";
 import { AgentConfigSystemPrompt } from "@/data/Prompt";
 import { AgentConfig, AgentRun, db, tools } from "@/db";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { calculateNextDailyRun } from "@/lib/agent-schedule";
-
-
-
-const DEMO_AGENT_LIMIT = 5;
+import { getOwnedAgent } from "@/lib/get-owned-agent";
 
 export async function POST(req: NextRequest) {
 
@@ -31,17 +28,6 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.GOOGLE_CLOUD_GEMINI_API_KEY;
 
     try {
-
-        const agentCount = await db.select({ value: count() })
-            .from(AgentConfig)
-            .where(eq(AgentConfig.userEmail, userEmail));
-
-        if ((agentCount[0]?.value ?? 0) >= DEMO_AGENT_LIMIT) {
-            return NextResponse.json(
-                { error: `Demo app limit reached. You can create max ${DEMO_AGENT_LIMIT} agents.` },
-                { status: 403 }
-            )
-        }
 
         // Send only the tool metadata Gemini needs for planning; credentials and
         // connected-account details stay server-side.
@@ -124,42 +110,76 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+    const user = await currentUser();
+    const userEmail = user?.primaryEmailAddress?.emailAddress ?? '';
+
+    if (!userEmail) {
+        return NextResponse.json({ error: 'Unauthorized User' }, { status: 401 })
+    }
+
     const agentConfig = await req.json();
 
-    console.log(agentConfig);
-
     try {
+        const existingAgent = await getOwnedAgent(agentConfig?.agentId, userEmail);
+
+        if (!existingAgent) {
+            return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+        }
+
+        // Only editable fields are saved, so the owner, ids, session and createdAt can't be changed.
         const result = await db.update(AgentConfig).set({
-            ...agentConfig,
-            createdAt: new Date()
-        }).where(eq(AgentConfig.agentId, agentConfig?.agentId))
+            name: agentConfig?.name,
+            agentImage: agentConfig?.agentImage,
+            description: agentConfig?.description,
+            instructions: agentConfig?.instructions,
+            objective: agentConfig?.objective,
+            tools: agentConfig?.tools,
+            skills: agentConfig?.skills,
+            schedule: agentConfig?.schedule,
+            outputFormat: agentConfig?.outputFormat,
+            status: agentConfig?.status,
+        }).where(eq(AgentConfig.agentId, existingAgent.agentId))
             .returning();
 
-        console.log(result[0]);
+        const updatedAgent = result[0];
+
         // Remove stale future occurrences before creating a replacement schedule.
-        const deleteScheduledAgentRun = await db.delete(AgentRun)
-            .where(and(eq(AgentRun.agentId, agentConfig?.agentId), eq(AgentRun.status, 'scheduled')))
-        // Active recurring agents should always have exactly one upcoming run.
-        if (agentConfig?.status == 'active') {
-            const nextRun = calculateNextDailyRun({ time: agentConfig?.schedule.time, timezone: agentConfig?.timeZone });
+        await db.delete(AgentRun)
+            .where(and(eq(AgentRun.agentId, existingAgent.agentId), eq(AgentRun.status, 'scheduled')))
+
+        const schedule = updatedAgent?.schedule as {
+            type?: string;
+            frequency?: string;
+            time?: string;
+            timezone?: string;
+        } | null;
+
+        // Active daily agents should always have exactly one upcoming run.
+        if (updatedAgent?.status == 'active'
+            && schedule?.type == 'recurring'
+            && schedule.frequency == 'daily'
+            && schedule.time) {
+            const timezone = schedule.timezone ?? 'UTC';
+            const nextRun = calculateNextDailyRun({ time: schedule.time, timezone });
 
             await db
                 .insert(AgentRun)
                 .values({
-                    agentId: agentConfig.agentId,
-                    userEmail: agentConfig.userEmail,
+                    agentId: existingAgent.agentId,
+                    userEmail: userEmail,
                     scheduledFor: nextRun,
-                    timezone: agentConfig?.schedule.timezone,
+                    timezone: timezone,
                     status: "scheduled",
                 })
                 .onConflictDoNothing();
         }
 
-        return NextResponse.json(result[0])
+        return NextResponse.json(updatedAgent)
     }
     catch (e) {
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
-
+        console.error('Agent update error', e);
+        const message = e instanceof Error ? e.message : String((e as any)?.message ?? e);
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }
 
@@ -179,14 +199,27 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+    const user = await currentUser();
+    const userEmail = user?.primaryEmailAddress?.emailAddress ?? '';
+
+    if (!userEmail) {
+        return NextResponse.json({ error: 'Unauthorized User' }, { status: 401 })
+    }
+
     const { agentId } = await req.json();
 
     try {
-        const deleteAgentRun = await db.delete(AgentRun)
-            .where(and(eq(AgentRun.agentId, agentId)))
+        const existingAgent = await getOwnedAgent(agentId, userEmail);
 
-        const deleteAgentConfig = await db.delete(AgentConfig)
-            .where(eq(AgentConfig.agentId, agentId));
+        if (!existingAgent) {
+            return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+        }
+
+        await db.delete(AgentRun)
+            .where(eq(AgentRun.agentId, existingAgent.agentId))
+
+        await db.delete(AgentConfig)
+            .where(eq(AgentConfig.agentId, existingAgent.agentId));
 
 
         return NextResponse.json({ msg: 'Agent Deleted!' }, { status: 200 })
