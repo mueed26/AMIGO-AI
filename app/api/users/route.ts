@@ -1,5 +1,5 @@
 /**
- * API route that upserts the Clerk user into the local database and returns profile credits.
+ * API route that upserts the Clerk user into the local database and returns the user profile.
  */
 import { db, users } from "@/db";
 import { currentUser } from "@clerk/nextjs/server";

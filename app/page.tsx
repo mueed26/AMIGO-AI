@@ -139,7 +139,7 @@ export default function Home() {
               <div className="mt-9 grid max-w-xl grid-cols-3 gap-3 text-sm">
                 <Stat value="3x" label="faster handoffs" />
                 <Stat value="24/7" label="scheduled runs" />
-                <Stat value="100" label="starter credits" />
+                <Stat value="100+" label="app integrations" />
               </div>
             </div>
 

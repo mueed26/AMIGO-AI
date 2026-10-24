@@ -4,70 +4,18 @@
  * Settings page for account preferences and product-level controls.
  */
 
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
-import { UserDetailContext } from "@/context/UserDetailContext"
-import axios from "axios"
-import { Bell, Bot, CreditCard, Loader2, ShieldCheck } from "lucide-react"
-import React, { useContext, useEffect, useState } from "react"
-
-const DEMO_AGENT_LIMIT = 5
-
-type AgentSummary = {
-    agentId: string
-}
+import { Bell, ShieldCheck } from "lucide-react"
+import React from "react"
 
 function SettingsPage() {
-    const { userDetail } = useContext(UserDetailContext)
-    const currentUser = Array.isArray(userDetail) ? userDetail[0] : userDetail
-    const [agentCount, setAgentCount] = useState(0)
-    const [loading, setLoading] = useState(true)
-
-    useEffect(() => {
-        getAgentCount()
-    }, [])
-
-    const getAgentCount = async () => {
-        try {
-            setLoading(true)
-            const result = await axios.get("/api/agent/configure")
-            setAgentCount((result.data as AgentSummary[]).length)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const usagePercent = Math.min((agentCount / DEMO_AGENT_LIMIT) * 100, 100)
-
     return (
         <div className="mx-auto w-full max-w-4xl px-6 py-10">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-                <p className="mt-1 text-sm text-muted-foreground">Control your demo workspace preferences and usage limits.</p>
+                <p className="mt-1 text-sm text-muted-foreground">Control your workspace preferences.</p>
             </div>
-
-            <section className="mt-6 rounded-2xl border bg-background p-5 shadow-sm">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="flex gap-3">
-                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-purple-100">
-                            <Bot className="size-5 text-purple-700" />
-                        </div>
-                        <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                                <h2 className="text-lg font-semibold">Demo plan</h2>
-                                <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">Free</Badge>
-                            </div>
-                            <p className="mt-1 text-sm text-muted-foreground">This demo workspace can create up to {DEMO_AGENT_LIMIT} agents.</p>
-                        </div>
-                    </div>
-                    <div className="text-sm font-medium text-muted-foreground">
-                        {loading ? <Loader2 className="size-4 animate-spin" /> : `${agentCount}/${DEMO_AGENT_LIMIT} agents`}
-                    </div>
-                </div>
-                <Progress value={usagePercent} className="mt-5" />
-            </section>
 
             <section className="mt-6 rounded-2xl border bg-background p-5 shadow-sm">
                 <h2 className="text-lg font-semibold">Preferences</h2>
@@ -84,12 +32,6 @@ function SettingsPage() {
                         title="Approval reminders"
                         description="Show reminders before agents use connected tools."
                         checked
-                    />
-                    <Separator />
-                    <SettingRow
-                        icon={<CreditCard className="size-4 text-orange-700" />}
-                        title="Credit alerts"
-                        description={`Current balance: ${currentUser?.usageCredits ?? 0} credits.`}
                     />
                 </div>
             </section>

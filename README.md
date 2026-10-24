@@ -11,9 +11,9 @@ AMIGO AI turns a single plain-English prompt like *"check my inbox every morning
 - 🧠 **Prompt-to-agent generation** — Google Gemini reads your request, decides which tools/skills it needs, asks clarifying questions when something's ambiguous, and generates a complete agent configuration (instructions, objective, schedule, output format).
 - 🔌 **Real tool integrations, not mock actions** — powered by [Composio](https://composio.dev/), agents can authenticate and act on real services (Gmail, Slack, calendars, and more) via OAuth, scoped per user.
 - 🌐 **Live web research** — a built-in Browserbase-powered browsing tool lets agents fetch current prices, news, and facts from the open web, with sources cited.
-- ⏰ **Autonomous scheduling** — one-off or recurring (daily) runs are queued and executed reliably in the background using [Inngest](https://www.inngest.com/), with credit deduction, retries, and next-run chaining handled automatically.
+- ⏰ **Autonomous scheduling** — one-off or recurring (daily) runs are queued and executed reliably in the background using [Inngest](https://www.inngest.com/), with retries and next-run chaining handled automatically.
 - 📊 **Dashboard & run history** — track every run's status (scheduled, queued, running, completed, failed), review past outputs, and manage connected integrations from one place.
-- 🔐 **Authenticated multi-user app** — built on [Clerk](https://clerk.com/) with a Postgres-backed data layer (per-user agents, tools, credits, and run logs).
+- 🔐 **Authenticated multi-user app** — built on [Clerk](https://clerk.com/) with a Postgres-backed data layer (per-user agents, tools, and run logs).
 
 ## How it works
 

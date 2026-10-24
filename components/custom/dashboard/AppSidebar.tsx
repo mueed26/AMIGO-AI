@@ -4,7 +4,6 @@
 /**
  * Dashboard sidebar navigation with account, route, and sign-out controls.
  */
-import { Progress } from "@/components/ui/progress"
 import {
     Sidebar,
     SidebarContent,
@@ -87,12 +86,7 @@ export function AppSidebar() {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter >
-                <div className="p-2 border rounded-lg flex gap-2 flex-col">
-                    <h2 className="flex justify-between">Agents <span>{userDetail?.agentCredits}/5</span></h2>
-                    <h2 className="flex justify-between">Credits <span>{userDetail?.usageCredits}</span></h2>
-                    <Progress value={66} />
-                </div>
-                <div className="flex items-center p-2 mt-2 gap-2.5">
+                <div className="flex items-center p-2 gap-2.5">
                     <UserButton />
                     <span>{userDetail?.name}</span>
                 </div>

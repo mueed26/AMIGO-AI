@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * Profile page that displays the authenticated user details and current credits.
+ * Profile page that displays the authenticated user details.
  */
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

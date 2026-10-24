@@ -172,33 +172,7 @@ export const ExecuteScheduledAgent = inngest.createFunction(
                 };
             }
 
-            // Step 5: Deduct one credit for this execution.
-            const creditBalance = await step.run(
-                `deduct-credit-${run.id}`,
-                async () => deductUsageCredit(run.userEmail),
-            );
-
-            if (!creditBalance) {
-                await step.run(`mark-run-no-credits-${run.id}`, async () => {
-                    await db
-                        .update(AgentRun)
-                        .set({
-                            status: "failed",
-                            error: "Insufficient credit balance.",
-                            completedAt: new Date(),
-                        })
-                        .where(eq(AgentRun.id, run.id));
-                });
-
-                return {
-                    runId: run.id,
-                    agentId: run.agentId,
-                    status: "failed",
-                    error: "Insufficient credit balance.",
-                };
-            }
-
-            // Step 6: Execute the agent using the existing project agent runner.
+            // Step 5: Execute the agent using the existing project agent runner.
             const output = await step.run(`execute-agent-${run.id}`, async () => {
                 const scheduledExecutionInstruction = `
 This run was triggered by AMIGO AI's scheduler.
@@ -248,7 +222,7 @@ If the objective mentions daily, recurring, schedule, or a time, treat that only
                 });
             });
 
-            // Step 7: Persist the successful output back to the AgentRun row.
+            // Step 6: Persist the successful output back to the AgentRun row.
             await step.run(`mark-run-completed-${run.id}`, async () => {
                 await db
                     .update(AgentRun)
@@ -267,7 +241,7 @@ If the objective mentions daily, recurring, schedule, or a time, treat that only
                 timezone?: string;
             } | null;
 
-            // Step 8: For daily recurring agents, create the next scheduled run.
+            // Step 7: For daily recurring agents, create the next scheduled run.
             if (
                 schedule?.type === "recurring" &&
                 schedule.frequency === "daily" &&
@@ -311,7 +285,7 @@ If the objective mentions daily, recurring, schedule, or a time, treat that only
                 });
             }
 
-            // Step 9: Return the single-run execution summary.
+            // Step 8: Return the single-run execution summary.
             return {
                 runId: run.id,
                 agentId: run.agentId,
@@ -321,7 +295,7 @@ If the objective mentions daily, recurring, schedule, or a time, treat that only
             const message =
                 error instanceof Error ? error.message : "Unknown error";
 
-            // Step 10: Persist failures so the run does not stay stuck as queued/running.
+            // Step 9: Persist failures so the run does not stay stuck as queued/running.
             await step.run(`mark-run-failed-${run.id}`, async () => {
                 await db
                     .update(AgentRun)
@@ -333,7 +307,7 @@ If the objective mentions daily, recurring, schedule, or a time, treat that only
                     .where(eq(AgentRun.id, run.id));
             });
 
-            // Step 11: Return failure details for the Inngest execution summary.
+            // Step 10: Return failure details for the Inngest execution summary.
             return {
                 runId: run.id,
                 agentId: run.agentId,
