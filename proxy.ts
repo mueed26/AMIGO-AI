@@ -1,17 +1,9 @@
-/**
- * Clerk proxy middleware that protects  the app 
- * anything under dashboard our default route shodul first pass the middleware to check if we logged in or not
- */
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-const isProtectedRoute = createRouteMatcher([
-  "/dashboard",
-  "/dashboard/:path*",
-])
+// Clerk proxy middleware that makes the signed-in user available to pages and API routes.
+// Each protected page, layout and API route checks auth itself, as Clerk recommends,
+// instead of matching paths here.
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
-
-export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) await auth.protect()
-})
+export default clerkMiddleware()
 
 export const config = {
   //skill all the statis files like image and css fot the middleware
