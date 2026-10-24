@@ -4,7 +4,7 @@
  * Slide-over chat interface for the  existing agent.
  */
 
-import { useContext, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ArrowUp, Loader2, Paperclip, Sparkles } from "lucide-react"
 
 import { Bubble, BubbleContent } from "@/components/ui/bubble"
@@ -22,7 +22,6 @@ import axios from "axios"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { toast } from "@/components/ui/toast"
-import { UserDetailContext } from "@/context/UserDetailContext"
 
 
 type Props = {
@@ -38,7 +37,6 @@ type ChatMessage = {
 }
 
 function AgentChatDrawer({ agent, open, onOpenChange }: Props) {
-    const { setUserDetail } = useContext(UserDetailContext)
     const [prompt, setPrompt] = useState("")
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [isAgentReplying, setIsAgentReplying] = useState(false)
@@ -74,16 +72,10 @@ function AgentChatDrawer({ agent, open, onOpenChange }: Props) {
         try {
 
             const result = await axios.post("/api/agent/run", {
-                agentConfig: agent,
                 agentId: agent?.agentId,
                 input: JSON.stringify(chatHistory)
 
             })
-
-            console.log(result.data?.finalOutput);
-
-            const updatedUser = await axios.post('/api/users')
-            setUserDetail(updatedUser.data)
 
             const agentMessage: ChatMessage = {
                 id: crypto.randomUUID(),

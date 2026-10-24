@@ -16,7 +16,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from '@/components/ui/button';
-import { Calendar, CalendarClockIcon, Ellipsis, MessageCircle, Pause, Pencil, Play, PlaySquareIcon, Trash } from 'lucide-react';
+import { Calendar, CalendarClockIcon, Ellipsis, Loader2, MessageCircle, Pause, Pencil, Play, PlaySquareIcon, Trash } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -24,14 +24,14 @@ import { CreatedAgentType } from '@/components/custom/agents/CreateAgent';
 import AgentChatDrawer from '@/components/custom/agents/AgentChatDrawer';
 import AgentEditSheet from './AgentEditSheet';
 import DeleteAgent from './DeleteAgent';
-import { UserDetailContext } from '@/context/UserDetailContext';
 
 
 
 
 function MyAgents() {
 
-    const { setUserDetail } = React.useContext(UserDetailContext);
+    // Agent whose Run button is waiting on the API, so only that button shows a spinner.
+    const [startingAgentId, setStartingAgentId] = useState<string | null>(null);
     const [myAgents, setMyAgents] = useState<CreatedAgentType[] | null>();
     const [openEditAgentSheet, setOpendEditAgentSheet] = useState(false);
     const [selectedEditAgent, setSelectedEditAgent] = useState<CreatedAgentType | null>(null);
@@ -62,35 +62,26 @@ function MyAgents() {
 
 
     const runAgent = async (agent: CreatedAgentType) => {
-
+        setStartingAgentId(agent.agentId);
         try {
-            const result = await axios.post("/api/agent/run", {
-                agentConfig: agent,
+            await axios.post("/api/agent/run", {
                 agentId: agent?.agentId,
                 input: null // Important to run Agent Immediatly
             });
 
-            console.log(result.data);
-            if (result.data.error) {
-                toast.add({
-                    type: 'error',
-                    title: result.data.error
-                });
-                return;
-            }
-
-            const updatedUser = await axios.post('/api/users');
-            setUserDetail(updatedUser.data);
-
             toast.add({
-                title: 'Agent Running...',
+                title: 'Agent running...',
+                description: 'Check the Runs page for the result.',
                 type: 'success'
             })
         } catch (error: any) {
+            const message = error?.response?.data?.error;
             toast.add({
                 type: 'error',
-                title: error?.response?.data?.error || 'Unable to run agent'
+                title: typeof message === 'string' ? message : 'Unable to run agent'
             });
+        } finally {
+            setStartingAgentId(null);
         }
 
     }
@@ -112,10 +103,8 @@ function MyAgents() {
                                 className='p-2 border size-16 rounded-xl bg-slate-100' />
                             <div>
                                 <DropdownMenu>
-                                    <DropdownMenuTrigger >
-                                        <Button variant={'ghost'} size={'icon'}>
-                                            <Ellipsis />
-                                        </Button>
+                                    <DropdownMenuTrigger render={<Button variant={'ghost'} size={'icon'} />}>
+                                        <Ellipsis />
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
@@ -142,8 +131,8 @@ function MyAgents() {
                         </div>
 
                         <div className='my-2'>
-                            <h2 className='font-bold flex gap-2'>{agent.name}
-                                <span className={`font-normal 
+                            <h2 className='font-bold flex items-start justify-between gap-2'>{agent.name}
+                                <span className={`font-normal shrink-0
                                  px-2 py-0.5  text-xs
                                 rounded-2xl ${agent?.status == 'pause' ? 'bg-yellow-100 text-yellow-600' : 'text-green-700 bg-green-100'}`}>
                                     {(agent.status.toUpperCase())}</span> </h2>
@@ -157,11 +146,12 @@ function MyAgents() {
                                         </span>}</p>
                             </div>
                             <Separator className={'my-3'} />
-                            <div className='flex items-center gap-2.5 w-full'>
+                            <div className='flex flex-wrap items-center gap-2.5 w-full'>
 
                                 <Button variant={'outline'} className={'flex-1  mt-2'}
                                     onClick={() => runAgent(agent)}
-                                ><Play />Run Agent</Button>
+                                    disabled={startingAgentId === agent.agentId}
+                                >{startingAgentId === agent.agentId ? <Loader2 className='animate-spin' /> : <Play />}Run Agent</Button>
                                 <Button className={'bg-purple-700 mt-2 flex-1'}
                                     onClick={() => { setOpenChatDrawer(true); setSelectedEditAgent(agent) }}
                                 ><MessageCircle />Chat With Agent</Button>

@@ -55,10 +55,8 @@ function NewAgentCard({ createdAgent, setUpdatedAgent }: Props) {
                 </AgentEditSheet>
 
                 <DropdownMenu>
-                    <DropdownMenuTrigger >
-                        <Button variant={'ghost'} size={'icon'}>
-                            <Ellipsis />
-                        </Button>
+                    <DropdownMenuTrigger render={<Button variant={'ghost'} size={'icon'} />}>
+                        <Ellipsis />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuGroup>

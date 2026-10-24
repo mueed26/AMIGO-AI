@@ -30,24 +30,27 @@ function DeleteAgent({ openAlert, agentId, closeAlert, refreshData }: props) {
 
     const deleteAgent = async () => {
         setLoading(true);
-        const result = await axios.delete('/api/agent/configure', {
-            data: { agentId: agentId }
-        });
-
-        if (result?.data?.error) {
-            const message = typeof result?.data?.error === 'string' ? result.data.error : 'Unable to delete agent.';
+        try {
+            await axios.delete('/api/agent/configure', {
+                data: { agentId: agentId }
+            });
+            // Pass false, not nothing, so the dialog's open state stays a boolean and it closes.
+            closeAlert(false);
+            toast.add({ type: 'success', title: 'Agent deleted!' })
+            refreshData()
+        } catch (e: any) {
+            const error = e?.response?.data?.error;
+            const message = typeof error === 'string' ? error : 'Unable to delete agent.';
             toast.add({ type: 'error', title: message })
-            return;
+        } finally {
+            // Always re-enable the button, even when the delete fails.
+            setLoading(false);
         }
-
-        setLoading(false);
-        closeAlert();
-        refreshData()
 
     }
 
     return (
-        <AlertDialog open={openAlert} onOpenChange={closeAlert}>
+        <AlertDialog open={!!openAlert} onOpenChange={(open: boolean) => closeAlert(open)}>
 
             <AlertDialogContent>
                 <AlertDialogHeader>
@@ -58,7 +61,7 @@ function DeleteAgent({ openAlert, agentId, closeAlert, refreshData }: props) {
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => closeAlert()}>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel onClick={() => closeAlert(false)}>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={() => deleteAgent()} disabled={loading}>
                         {loading && <Loader2Icon className='animate-spin' />}
                         Continue</AlertDialogAction>

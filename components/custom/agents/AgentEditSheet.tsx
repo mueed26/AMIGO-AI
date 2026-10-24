@@ -86,7 +86,8 @@ function AgentEditSheet({
     const [tools, setTools] = useState<EditableTool[]>([])
     const [openSheet, setOpenSheet] = useState(openSheet_);
     const [loadingTools, setLoadingTools] = useState(false);
-    const [disconnectToolLoading, setDisconnectToolLoading] = useState(false);
+    // Slug of the tool being disconnected, so only that tool's button shows a spinner.
+    const [disconnectingSlug, setDisconnectingSlug] = useState<string | null>(null);
     useEffect(() => {
         setDraftAgent(agentConfig)
         agentConfig && GetTools();
@@ -164,12 +165,13 @@ function AgentEditSheet({
     const handleSubmit = async (event: any) => {
         event.preventDefault();
         //update to DB as well
-        const result = await axios.put('/api/agent/configure', {
-            ...draftAgent
-        })
-        console.log(result.data);
-        if (result.data?.error) {
-            const message = typeof result.data.error === 'string' ? result.data.error : 'Unable to update agent.';
+        try {
+            await axios.put('/api/agent/configure', {
+                ...draftAgent
+            })
+        } catch (e: any) {
+            const error = e?.response?.data?.error;
+            const message = typeof error === 'string' ? error : 'Unable to update agent.';
             toast.add({ type: 'error', title: message });
             return;
         }
@@ -182,7 +184,7 @@ function AgentEditSheet({
         })
 
         setOpenSheet(false);
-        closeSheet(false)
+        closeSheet?.(false)
 
     }
 
@@ -204,33 +206,32 @@ function AgentEditSheet({
 
     const disconnectTool = async (slug: string) => {
 
-        setDisconnectToolLoading(true);
-        const result = await axios.delete('/api/agent/tools/connect', {
-            data: {
-                toolSlug: slug,
-                agentId: agentConfig?.agentId
-            }
-        })
-
-        if (result.data.error) {
-            const message = typeof result.data.error === 'string' ? result.data.error : 'Unable to disconnect tool.';
+        setDisconnectingSlug(slug);
+        try {
+            await axios.delete('/api/agent/tools/connect', {
+                data: {
+                    toolSlug: slug,
+                    agentId: agentConfig?.agentId
+                }
+            })
+            toast.add({
+                type: 'success',
+                title: 'Tool disconnected!'
+            })
+            // Refresh tool status instead of closing the sheet.
+            await GetTools();
+        } catch (e: any) {
+            const error = e?.response?.data?.error;
+            const message = typeof error === 'string' ? error : 'Unable to disconnect tool.';
             toast.add({ type: 'error', title: message })
-            setDisconnectToolLoading(false);
-            return;
+        } finally {
+            setDisconnectingSlug(null);
         }
-        toast.add({
-            type: 'success',
-            title: 'Tool disconnected!'
-        })
-        setDisconnectToolLoading(false);
-        setOpenSheet(false);
     }
 
     return (
-        <Sheet open={openSheet} onOpenChange={(v: boolean) => { setOpenSheet(v); closeSheet(v) }}>
-            <SheetTrigger >
-                {children}
-            </SheetTrigger>
+        <Sheet open={openSheet} onOpenChange={(v: boolean) => { setOpenSheet(v); closeSheet?.(v) }}>
+            {children && <SheetTrigger render={children as React.ReactElement} />}
 
             <SheetContent className="flex w-full flex-col p-0 sm:max-w-xl">
                 <form
@@ -644,9 +645,9 @@ function AgentEditSheet({
                                                         : "default"
                                                 }
                                                 size="sm"
-                                                disabled={disconnectToolLoading}
+                                                disabled={disconnectingSlug === tool.slug}
                                             >
-                                                {disconnectToolLoading && <Loader2 className="animate-spin" />}
+                                                {disconnectingSlug === tool.slug && <Loader2 className="animate-spin" />}
                                                 {tool.connected
                                                     ? "Disconnect"
                                                     : "Connect"}
@@ -683,13 +684,8 @@ function AgentEditSheet({
 
                     <SheetFooter className="border-t p-4">
                         <div className="flex w-full justify-end gap-2.5">
-                            <SheetClose >
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                >
-                                    Cancel
-                                </Button>
+                            <SheetClose render={<Button type="button" variant="outline" />}>
+                                Cancel
                             </SheetClose>
 
                             <Button

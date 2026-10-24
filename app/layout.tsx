@@ -30,7 +30,7 @@ export default function RootLayout({
           <Provider>
             {children}
           </Provider>
-          <Toaster />
+          <Toaster timeout={3000} />
         </body>
       </html>
     </ClerkProvider>
