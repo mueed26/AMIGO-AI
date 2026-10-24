@@ -1,9 +1,10 @@
 import { SignUp } from "@clerk/nextjs";
+import AuthShell from "@/components/custom/AuthShell";
 
 export default function SignUpPage() {
   return (
-    <main style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', backgroundColor: '#09090b' }}>
+    <AuthShell title="Hire your first agent. It starts tonight." subtitle="create your console">
       <SignUp />
-    </main>
+    </AuthShell>
   );
 }

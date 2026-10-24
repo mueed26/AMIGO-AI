@@ -6,6 +6,7 @@ import { AgentRun, db } from "@/db";
 import { inngest } from "@/inngest/client";
 import { executeAgent } from "@/lib/execute-agent";
 import { getOwnedAgent } from "@/lib/get-owned-agent";
+import { logFor } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { and, eq, inArray } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
@@ -58,6 +59,7 @@ export async function POST(req: NextRequest) {
                 name: 'agent/run.execute',
                 data: { runId: run.id }
             });
+            logFor({ runId: run.id, agentId: AgentConfigData.agentId }).info("run queued manually");
             return NextResponse.json({ msg: 'Agent running' }, { status: 200 })
         }
         catch (e) {

@@ -1,8 +1,6 @@
 "use client"
 
-/**
- * Interactive clarification form rendered when the AI needs more details before creating an agent.
- */
+// Step-by-step questions shown when the AI needs more detail before building an agent.
 
 import { useState } from "react"
 import { ArrowLeft, ArrowRight, Check } from "lucide-react"
@@ -106,16 +104,16 @@ export default function AIAgentQuestions({
             {/* Progress */}
             <div className="mb-8">
                 <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">
-                        Question {currentIndex + 1} of {questionList.length}
+                    <span className="label-mono">
+                        Q{String(currentIndex + 1).padStart(2, "0")} / {String(questionList.length).padStart(2, "0")}
                     </span>
 
-                    <span className="text-sm font-medium">
+                    <span className="font-mono text-xs text-signal">
                         {Math.round(((currentIndex + 1) / questionList.length) * 100)}%
                     </span>
                 </div>
 
-                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                     <div
                         className="h-full bg-primary transition-all duration-300"
                         style={{
@@ -127,11 +125,11 @@ export default function AIAgentQuestions({
 
             {/* Question */}
             <div className="min-h-[280px]">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                    Help me understand your request
+                <p className="label-mono mb-2">
+                    Quick check before I build it
                 </p>
 
-                <h2 className="text-xl font-semibold mb-6">
+                <h2 className="font-heading text-xl font-semibold mb-6">
                     {currentQuestion.question}
                 </h2>
 
@@ -140,7 +138,7 @@ export default function AIAgentQuestions({
                     <Input
                         autoFocus
                         value={currentTextAnswer}
-                        placeholder={currentQuestion.customPlaceholder || "Enter your answer"}
+                        placeholder={currentQuestion.customPlaceholder || "Type your answer"}
                         onChange={(e) => handleAnswer(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === "Enter" && hasCurrentAnswer) {
@@ -208,7 +206,7 @@ export default function AIAgentQuestions({
                                         }`}
                                 >
                                     <span className="text-sm font-medium">
-                                        Other / Custom
+                                        Something else
                                     </span>
 
                                     {customMode[currentQuestion.id] && (
@@ -298,7 +296,7 @@ export default function AIAgentQuestions({
                                         }`}
                                 >
                                     <span className="text-sm font-medium">
-                                        Other / Custom
+                                        Something else
                                     </span>
 
                                     <div className={`flex h-5 w-5 items-center justify-center rounded border transition-colors ${customMode[currentQuestion.id]
@@ -346,7 +344,7 @@ export default function AIAgentQuestions({
                     className="gap-2"
                 >
                     <ArrowLeft className="h-4 w-4" />
-                    Previous
+                    Back
                 </Button>
 
                 <Button
@@ -356,7 +354,7 @@ export default function AIAgentQuestions({
                 >
                     {currentIndex === questionList.length - 1 ? (
                         <>
-                            Continue
+                            Build agent
                             <Check className="h-4 w-4" />
                         </>
                     ) : (

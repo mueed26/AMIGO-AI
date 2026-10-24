@@ -1,271 +1,242 @@
 "use client"
 
-/**
- * Public landing page for AMIGO AI
- *  before users enter the dashboard.
- */
+// Public landing page shown before users sign in to the dashboard.
 
 import { useUser } from "@clerk/nextjs"
-import {
-  ArrowRight,
-  Blocks,
-  Bot,
-  CalendarClock,
-  CheckCircle2,
-  Play,
-  Sparkles,
-  Zap,
-} from "lucide-react"
+import { ArrowUpRight, Check, Globe, MoonStar } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import type { ReactNode } from "react"
 
-const agents = [
+// Fake run log for the hero console, so visitors see what a run looks like.
+const logLines = [
+  { time: "06:58", tag: "queue", text: "inbox-digest picked up by scheduler" },
+  { time: "07:00", tag: "gmail", text: "read 11 new messages since yesterday" },
+  { time: "07:01", tag: "web", text: "checked 3 job posts for salary + location" },
+  { time: "07:02", tag: "docs", text: "wrote 'Morning brief, Oct 24' to Google Docs" },
+  { time: "07:02", tag: "done", text: "finished in 2m 14s, next run tomorrow 07:00" },
+]
+
+const steps = [
   {
-    name: "Inbox Scout",
-    task: "Summarize investor replies",
-    state: "Running",
-    color: "bg-sky-100 text-sky-800",
+    no: "01",
+    title: "Say what you want done",
+    text: "Type the job the way you'd explain it to a teammate. If something's vague, AMIGO asks a quick follow-up instead of guessing.",
   },
   {
-    name: "Pipeline Minder",
-    task: "Sync warm leads to CRM",
-    state: "Scheduled",
-    color: "bg-violet-100 text-violet-800",
+    no: "02",
+    title: "Hand it the right keys",
+    text: "Sign in to Gmail, Slack, Notion and friends once. Each agent only gets the apps its job actually needs.",
   },
   {
-    name: "Market Pulse",
-    task: "Send Monday briefing",
-    state: "Ready",
-    color: "bg-emerald-100 text-emerald-800",
+    no: "03",
+    title: "Let it clock in on time",
+    text: "Run it now or put it on a daily shift. Every run is logged with its output, so you can check the work over coffee.",
   },
 ]
 
-const features = [
-  {
-    icon: Bot,
-    title: "Build focused agents",
-    text: "Give every agent a goal, tools, instructions, and the exact output format your workflow expects.",
-    className: "bg-emerald-50 text-emerald-700",
-  },
-  {
-    icon: CalendarClock,
-    title: "Schedule real work",
-    text: "Run agents once, daily, weekly, or on the cadence that keeps your team moving without manual check-ins.",
-    className: "bg-sky-50 text-sky-700",
-  },
-  {
-    icon: Blocks,
-    title: "Connect your stack",
-    text: "Wire agents into integrations so they can read, write, and execute tasks across the tools you already use.",
-    className: "bg-amber-50 text-amber-700",
-  },
-]
+const apps = ["Gmail", "Slack", "Notion", "Google Docs", "Google Sheets", "Calendar", "GitHub", "Discord", "LinkedIn", "Outlook", "Reddit", "WhatsApp"]
 
 export default function Home() {
   const { isLoaded, isSignedIn } = useUser()
   const showSignedIn = isLoaded && isSignedIn
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#fbfaf7] text-slate-950">
-      <section className="relative min-h-screen border-b border-slate-200 bg-[linear-gradient(180deg,#fffdf8_0%,#eef8f4_44%,#f7f3ff_100%)]">
-        <div className="absolute inset-0 opacity-[0.24] [background-image:linear-gradient(#0f172a_1px,transparent_1px),linear-gradient(90deg,#0f172a_1px,transparent_1px)] [background-size:42px_42px]" />
-        <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-5 md:px-8">
+    <main className="min-h-screen overflow-hidden bg-background text-foreground">
+      <section className="relative border-b">
+        <div className="bg-dots absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
+        <Image src="/hero-glow.svg" alt="" fill priority className="pointer-events-none object-cover" />
+
+        <div className="relative mx-auto w-full max-w-6xl px-5 md:px-8">
           <header className="flex h-20 items-center justify-between gap-4">
-            <Link href="/" className="flex min-w-0 items-center gap-3">
-              <Image src="/logo.svg" alt="AMIGO AI logo" width={42} height={42} priority />
-              <span className="truncate text-lg font-semibold tracking-normal">Amigo Ai</span>
+            <Link href="/" className="flex items-center gap-2.5">
+              <Image src="/logo.svg" alt="AMIGO AI logo" width={32} height={32} priority />
+              <span className="font-heading text-xl font-semibold tracking-tight">amigo</span>
             </Link>
 
-            <nav className="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
-              <a href="#agents" className="transition-colors hover:text-slate-950">Agents</a>
-              <a href="#workflow" className="transition-colors hover:text-slate-950">Workflow</a>
-              <a href="#integrations" className="transition-colors hover:text-slate-950">Integrations</a>
+            <nav className="hidden items-center gap-8 md:flex">
+              <a href="#how" className="label-mono transition-colors hover:text-foreground">How it works</a>
+              <a href="#apps" className="label-mono transition-colors hover:text-foreground">Apps</a>
             </nav>
 
-            <div className="flex items-center gap-2">
-              {!showSignedIn ? (
-                <>
-                  <Link href="/sign-in" className="hidden h-9 items-center justify-center rounded-lg px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-white/70 sm:inline-flex">
-                    Sign in
-                  </Link>
-                  <Link href="/sign-up" className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-slate-950 px-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800">
-                    Start free <ArrowRight className="size-4" />
-                  </Link>
-                </>
-              ) : (
-                <Link href="/dashboard" className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-slate-950 px-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800">
-                  Open dashboard <ArrowRight className="size-4" />
+            {!showSignedIn ? (
+              <div className="flex items-center gap-1">
+                <Link href="/sign-in" className="hidden h-9 items-center px-3 text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline-flex">
+                  Log in
                 </Link>
-              )}
-            </div>
+                <Link href="/sign-up" className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">
+                  Get started <ArrowUpRight className="size-4" />
+                </Link>
+              </div>
+            ) : (
+              <Link href="/dashboard" className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">
+                Open console <ArrowUpRight className="size-4" />
+              </Link>
+            )}
           </header>
 
-          <div className="grid flex-1 items-center gap-10 py-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(460px,1.08fr)] lg:py-12">
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/75 px-3 py-1 text-sm font-medium text-emerald-800 shadow-sm">
-                <Sparkles className="size-4" />
-                Agentic automation for everyday operations
-              </div>
-              <h1 className="mt-6 max-w-4xl text-5xl font-bold leading-[1.02] tracking-normal text-slate-950 md:text-7xl">
-                AMIGO Ai keeps your agents moving while you work.
+          <div className="grid items-center gap-12 pt-14 pb-20 lg:grid-cols-[1.05fr_0.95fr] lg:pt-20 lg:pb-28">
+            <div>
+              <p className="label-mono inline-flex items-center gap-2 rounded-full border bg-panel/80 px-3 py-1.5">
+                <MoonStar className="size-3.5 text-signal" />
+                AI agents that work while you sleep
+              </p>
+              <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.98] tracking-tight md:text-7xl">
+                Hand off the busywork.
+                <span className="block text-signal">Agents take the night shift.</span>
               </h1>
-              <p className="mt-6 max-w-2xl text-base leading-7 text-slate-700 md:text-lg">
-                Create AI agents that use tools, follow schedules, run repeatable tasks, and report back with the signal your team needs.
+              <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground md:text-lg">
+                Describe a job in one sentence. AMIGO builds the agent, plugs it into your apps, and runs it on your schedule, with a log of everything it did.
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-9 flex flex-wrap gap-3">
                 {!showSignedIn ? (
                   <>
-                    <Link href="/sign-up" className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800">
-                      Create your first agent <ArrowRight className="size-4" />
+                    <Link href="/sign-up" className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90">
+                      Build an agent free <ArrowUpRight className="size-4" />
                     </Link>
-                    <Link href="/sign-in" className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-300 bg-white/75 px-5 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-white">
-                      Sign in
-                    </Link>
+                    <a href="#how" className="inline-flex h-11 items-center rounded-md border bg-panel/80 px-5 text-sm font-medium transition-colors hover:bg-accent">
+                      See how it works
+                    </a>
                   </>
                 ) : (
                   <>
-                    <Link href="/dashboard/agents" className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800">
-                      Manage agents <ArrowRight className="size-4" />
+                    <Link href="/dashboard/agents" className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90">
+                      Go to my agents <ArrowUpRight className="size-4" />
                     </Link>
-                    <Link href="/dashboard/run" className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-300 bg-white/75 px-5 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-white">
-                      View runs
+                    <Link href="/dashboard/run" className="inline-flex h-11 items-center rounded-md border bg-panel/80 px-5 text-sm font-medium transition-colors hover:bg-accent">
+                      Check run log
                     </Link>
                   </>
                 )}
               </div>
 
-              <div className="mt-9 grid max-w-xl grid-cols-3 gap-3 text-sm">
-                <Stat value="3x" label="faster handoffs" />
-                <Stat value="24/7" label="scheduled runs" />
-                <Stat value="100+" label="app integrations" />
-              </div>
+              <dl className="mt-12 grid max-w-md grid-cols-3 divide-x border-y">
+                <Figure value="1" label="sentence to set up" />
+                <Figure value="12+" label="apps to plug in" />
+                <Figure value="24/7" label="scheduled runs" />
+              </dl>
             </div>
 
-            <div className="relative" id="agents">
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-300/50">
-                <div className="flex items-center justify-between border-b border-slate-200 bg-slate-950 px-4 py-3 text-white">
-                  <div className="flex items-center gap-2">
-                    <Image src="/logo.svg" alt="" width={28} height={28} />
-                    <span className="text-sm font-semibold">Agent command</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-300">
-                    <span className="size-2 rounded-full bg-emerald-400" />
-                    Live
-                  </div>
-                </div>
-
-                <div className="grid gap-0 md:grid-cols-[190px_minmax(0,1fr)]">
-                  <aside className="hidden border-r border-slate-200 bg-slate-50 p-4 md:block">
-                    {["Dashboard", "Agents", "Runs", "Integrations"].map((item, index) => (
-                      <div key={item} className={`mb-2 flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium ${index === 1 ? "bg-white text-slate-950 shadow-sm" : "text-slate-600"}`}>
-                        <span className={`size-2 rounded-full ${["bg-sky-500", "bg-emerald-500", "bg-rose-500", "bg-violet-500"][index]}`} />
-                        {item}
-                      </div>
-                    ))}
-                  </aside>
-
-                  <div className="min-w-0 p-4 md:p-5">
-                    <div className="flex flex-col gap-3 border-b border-slate-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-slate-500">Today&apos;s briefing</p>
-                        <h2 className="mt-1 text-2xl font-bold tracking-normal">3 agents ready to run</h2>
-                      </div>
-                      <button className="inline-flex h-9 w-fit items-center justify-center gap-2 rounded-lg bg-slate-950 px-3 text-sm font-medium text-white">
-                        <Play className="size-4" />
-                        Run now
-                      </button>
-                    </div>
-
-                    <div className="mt-5 space-y-3">
-                      {agents.map((agent) => (
-                        <div key={agent.name} className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                          <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-slate-100">
-                            <Bot className="size-5 text-slate-800" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="truncate text-sm font-semibold">{agent.name}</h3>
-                            <p className="truncate text-sm text-slate-500">{agent.task}</p>
-                          </div>
-                          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${agent.color}`}>{agent.state}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                      <MiniMetric icon={<CheckCircle2 className="size-4" />} label="Completed" value="18" className="bg-emerald-50 text-emerald-800" />
-                      <MiniMetric icon={<Zap className="size-4" />} label="Running" value="2" className="bg-sky-50 text-sky-800" />
-                      <MiniMetric icon={<CalendarClock className="size-4" />} label="Scheduled" value="9" className="bg-violet-50 text-violet-800" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <RunConsole />
           </div>
         </div>
       </section>
 
-      <section id="workflow" className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-16 md:grid-cols-3 md:px-8">
-        {features.map((feature) => (
-          <div key={feature.title} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className={`mb-5 flex size-11 items-center justify-center rounded-lg ${feature.className}`}>
-              <feature.icon className="size-5" />
+      <section id="how" className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8">
+        <p className="label-mono">How it works</p>
+        <h2 className="mt-3 max-w-2xl font-heading text-3xl font-semibold tracking-tight md:text-4xl">
+          From "I wish someone would do this" to a job that runs itself.
+        </h2>
+        <div className="mt-12 grid border-t md:grid-cols-3 md:divide-x">
+          {steps.map((step) => (
+            <div key={step.no} className="border-b py-8 md:border-b-0 md:px-8 md:first:pl-0 md:last:pr-0">
+              <span className="font-mono text-sm text-signal">{step.no}</span>
+              <h3 className="mt-4 font-heading text-xl font-semibold">{step.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">{step.text}</p>
             </div>
-            <h2 className="text-lg font-semibold tracking-normal">{feature.title}</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">{feature.text}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
 
-      <section id="integrations" className="border-t border-slate-200 bg-white">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-5 py-12 md:flex-row md:items-center md:justify-between md:px-8">
+      <section id="apps" className="border-y bg-panel">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-16 md:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Ready when you are</p>
-            <h2 className="mt-2 text-3xl font-bold tracking-normal">Launch an agent workspace in minutes.</h2>
+            <p className="label-mono">Plugs into</p>
+            <h2 className="mt-3 font-heading text-3xl font-semibold tracking-tight">The apps you already live in.</h2>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Connections go through secure OAuth, scoped to your account. Every agent can also browse the live web to check prices, news and facts, and cites where it looked.
+            </p>
           </div>
-          {!showSignedIn ? (
-            <Link href="/sign-up" className="inline-flex h-11 w-fit items-center justify-center gap-2 rounded-lg bg-slate-950 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800">
-              Get started <ArrowRight className="size-4" />
-            </Link>
-          ) : (
-            <Link href="/dashboard" className="inline-flex h-11 w-fit items-center justify-center gap-2 rounded-lg bg-slate-950 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800">
-              Go to dashboard <ArrowRight className="size-4" />
-            </Link>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {apps.map((app) => (
+              <span key={app} className="inline-flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm">
+                <Check className="size-3.5 text-ok" />
+                {app}
+              </span>
+            ))}
+            <span className="inline-flex items-center gap-2 rounded-md border border-signal/40 bg-signal/10 px-3 py-2 text-sm text-signal">
+              <Globe className="size-3.5" />
+              Live web research
+            </span>
+          </div>
         </div>
       </section>
+
+      <section className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <h2 className="max-w-xl font-heading text-4xl font-semibold leading-tight tracking-tight">
+            Your first agent is one sentence away.
+          </h2>
+          <Link href={showSignedIn ? "/dashboard/agents" : "/sign-up"} className="inline-flex h-11 w-fit items-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90">
+            {showSignedIn ? "Create an agent" : "Start for free"} <ArrowUpRight className="size-4" />
+          </Link>
+        </div>
+      </section>
+
+      <footer className="border-t">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-6 md:px-8">
+          <span className="label-mono">amigo ai</span>
+          <span className="label-mono">built with gemini · openai agents · composio · inngest</span>
+        </div>
+      </footer>
     </main>
   )
 }
 
-function Stat({ value, label }: { value: string; label: string }) {
+function Figure({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-xl border border-white/80 bg-white/65 p-3 shadow-sm">
-      <p className="text-2xl font-bold leading-none tracking-normal text-slate-950">{value}</p>
-      <p className="mt-2 text-xs font-medium leading-4 text-slate-600">{label}</p>
+    <div className="px-4 py-4 first:pl-0">
+      <dt className="font-heading text-2xl font-semibold">{value}</dt>
+      <dd className="mt-1 text-xs text-muted-foreground">{label}</dd>
     </div>
   )
 }
 
-function MiniMetric({
-  icon,
-  label,
-  value,
-  className,
-}: {
-  icon: ReactNode
-  label: string
-  value: string
-  className: string
-}) {
+function RunConsole() {
   return (
-    <div className={`rounded-xl p-3 ${className}`}>
-      <div className="flex items-center justify-between gap-2">
-        {icon}
-        <span className="text-xl font-bold leading-none">{value}</span>
+    <div className="overflow-hidden rounded-lg border bg-panel shadow-2xl shadow-black/60">
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <div className="flex items-center gap-1.5">
+          <span className="size-2.5 rounded-full bg-white/10" />
+          <span className="size-2.5 rounded-full bg-white/10" />
+          <span className="size-2.5 rounded-full bg-white/10" />
+        </div>
+        <span className="label-mono">run log · inbox-digest</span>
+        <span className="flex items-center gap-1.5 font-mono text-[11px] text-ok">
+          <span className="size-1.5 animate-pulse rounded-full bg-ok" />
+          live
+        </span>
       </div>
-      <p className="mt-3 text-xs font-semibold">{label}</p>
+
+      <div className="bg-scan space-y-3 p-5 font-mono text-[13px] leading-5">
+        {logLines.map((line, index) => (
+          <div key={index} className="flex gap-3">
+            <span className="shrink-0 text-muted-foreground">{line.time}</span>
+            <span className={`w-12 shrink-0 ${line.tag == "done" ? "text-ok" : "text-signal"}`}>{line.tag}</span>
+            <span className="text-foreground/90">{line.text}</span>
+          </div>
+        ))}
+        <div className="flex gap-3 text-muted-foreground">
+          <span>07:02</span>
+          <span className="w-12">idle</span>
+          <span className="inline-block h-4 w-2 animate-pulse bg-signal" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 divide-x border-t">
+        <ConsoleStat label="done" value="18" className="text-ok" />
+        <ConsoleStat label="on shift" value="2" className="text-run" />
+        <ConsoleStat label="queued" value="9" className="text-signal" />
+      </div>
+    </div>
+  )
+}
+
+function ConsoleStat({ label, value, className }: { label: string; value: string; className: string }) {
+  return (
+    <div className="px-5 py-4">
+      <p className={`font-heading text-2xl font-semibold ${className}`}>{value}</p>
+      <p className="label-mono mt-1">{label}</p>
     </div>
   )
 }

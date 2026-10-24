@@ -1,14 +1,11 @@
 "use client"
 
-/**
- * Profile page that displays the authenticated user details.
- */
+// Account page with the signed-in user's details.
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { UserDetailContext } from "@/context/UserDetailContext"
 import { useUser } from "@clerk/nextjs"
-import { CalendarDays, Mail, User2 } from "lucide-react"
+import { CalendarDays, Mail, ShieldCheck, User2 } from "lucide-react"
 import moment from "moment"
 import React, { useContext } from "react"
 
@@ -26,35 +23,28 @@ function ProfilePage() {
         .toUpperCase()
 
     return (
-        <div className="mx-auto w-full max-w-4xl px-6 py-10">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
-                <p className="mt-1 text-sm text-muted-foreground">Manage your account identity and demo workspace details.</p>
-            </div>
+        <div className="mx-auto w-full max-w-3xl px-6 py-10">
+            <p className="label-mono">account</p>
+            <h1 className="mt-2 font-heading text-4xl font-semibold tracking-tight">Who's running the show</h1>
+            <p className="mt-2 text-sm text-muted-foreground">Your login details. Name, photo and password live in your Clerk account.</p>
 
-            <section className="mt-6 rounded-2xl border bg-background p-5 shadow-sm">
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-4">
-                        <Avatar className="size-16 border">
-                            <AvatarImage src={user?.imageUrl} alt={displayName} />
-                            <AvatarFallback>{initials}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                                <h2 className="text-xl font-semibold">{displayName}</h2>
-                                <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">Demo</Badge>
-                            </div>
-                            <p className="mt-1 text-sm text-muted-foreground">{email}</p>
-                        </div>
+            <section className="mt-8 overflow-hidden rounded-lg border bg-card">
+                <div className="flex items-center gap-4 border-b p-5">
+                    <Avatar className="size-14 border">
+                        <AvatarImage src={user?.imageUrl} alt={displayName} />
+                        <AvatarFallback>{initials}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                        <h2 className="truncate font-heading text-xl font-semibold">{displayName}</h2>
+                        <p className="truncate font-mono text-xs text-muted-foreground">{email}</p>
                     </div>
-                    <Badge variant="outline" className="w-fit">Managed by Clerk</Badge>
                 </div>
-            </section>
-
-            <section className="mt-6 grid gap-4 md:grid-cols-3">
-                <ProfileInfo icon={<User2 className="size-4" />} label="Account" value={displayName} />
-                <ProfileInfo icon={<Mail className="size-4" />} label="Email" value={email} />
-                <ProfileInfo icon={<CalendarDays className="size-4" />} label="Joined" value={currentUser?.createdAt ? moment(currentUser.createdAt).format("MMM D, YYYY") : "Recently"} />
+                <dl className="divide-y">
+                    <ProfileInfo icon={<User2 className="size-4" />} label="Name" value={displayName} />
+                    <ProfileInfo icon={<Mail className="size-4" />} label="Email" value={email} />
+                    <ProfileInfo icon={<CalendarDays className="size-4" />} label="Member since" value={currentUser?.createdAt ? moment(currentUser.createdAt).format("MMM D, YYYY") : "Recently"} />
+                    <ProfileInfo icon={<ShieldCheck className="size-4" />} label="Sign-in" value="Handled by Clerk" />
+                </dl>
             </section>
         </div>
     )
@@ -62,12 +52,12 @@ function ProfilePage() {
 
 function ProfileInfo({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
     return (
-        <div className="rounded-xl border bg-background p-4 shadow-sm">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+        <div className="flex items-center justify-between gap-4 px-5 py-4">
+            <dt className="label-mono flex items-center gap-2">
                 {icon}
                 {label}
-            </div>
-            <p className="mt-3 truncate font-semibold">{value}</p>
+            </dt>
+            <dd className="truncate text-sm">{value}</dd>
         </div>
     )
 }

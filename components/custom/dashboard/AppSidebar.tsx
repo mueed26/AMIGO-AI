@@ -1,9 +1,6 @@
 "use client"
 
-
-/**
- * Dashboard sidebar navigation with account, route, and sign-out controls.
- */
+// Dashboard sidebar with the main sections, account menu and current user.
 import {
     Sidebar,
     SidebarContent,
@@ -16,79 +13,70 @@ import {
 import { UserDetailContext } from "@/context/UserDetailContext"
 
 import { UserButton } from "@clerk/nextjs"
-import { AppWindow, Blocks, Bot, Layers, Play, Settings, User2 } from "lucide-react"
+import { Activity, Bot, Cable, LayoutGrid, SlidersHorizontal, UserRound } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useContext, useState } from "react"
+import { useContext } from "react"
+
+const workspaceLinks = [
+    { label: "Overview", href: "/dashboard", icon: LayoutGrid },
+    { label: "Agents", href: "/dashboard/agents", icon: Bot },
+    { label: "Run log", href: "/dashboard/run", icon: Activity },
+    { label: "Connections", href: "/dashboard/integrations", icon: Cable },
+]
+
+const accountLinks = [
+    { label: "Preferences", href: "/dashboard/settings", icon: SlidersHorizontal },
+    { label: "Account", href: "/dashboard/profile", icon: UserRound },
+]
 
 export function AppSidebar() {
 
     const path = usePathname();
-    //get the value of the user by using useContext
-    const { userDetail, setUserDetail } = useContext(UserDetailContext);
+    const { userDetail } = useContext(UserDetailContext);
     const router = useRouter();
+
+    const renderLink = (link: typeof workspaceLinks[number]) => {
+        const active = path == link.href
+        return (
+            <SidebarMenuButton key={link.href} onClick={() => router.push(link.href)}
+                className={`relative h-9 gap-3 rounded-md px-3 text-[13px] text-muted-foreground hover:bg-sidebar-accent hover:text-foreground
+                ${active ? 'bg-sidebar-accent text-foreground before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-signal' : ''}`}>
+                <link.icon className={`size-4 ${active ? 'text-signal' : ''}`} />
+                <span>{link.label}</span>
+            </SidebarMenuButton>
+        )
+    }
+
     return (
         <Sidebar>
-            <SidebarHeader className="flex flex-row gap-2.5 items-center px-4 py-4" >
-                <Image src={"/logo.svg"} alt="logo" width={40} height={40} />
-                <h2 className="font-semibold text-lg text-slate-900 ">AMIGO AI</h2>
+            <SidebarHeader className="px-4 pt-5 pb-3">
+                <Link href="/" className="flex items-center gap-2.5">
+                    <Image src={"/logo.svg"} alt="logo" width={28} height={28} />
+                    <span className="font-heading text-lg font-semibold tracking-tight">amigo</span>
+                    <span className="label-mono ml-auto rounded border px-1.5 py-0.5 text-[10px]">console</span>
+                </Link>
             </SidebarHeader>
-            
-            <SidebarContent>
-                <SidebarGroup className="flex gap-1">
-                    <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-                    <SidebarMenuButton onClick={() => router.push('/dashboard')} className={`h-12 gap-3 hover:bg-slate-100 ${path == ('/dashboard') ? 'bg-slate-100' : null}`}>
-                        <div className=" flex h-9 w-9 shrink-0 bg-blue-100 items-center justify-center rounded-lg">
-                            <AppWindow className="h-[18px] w-[18px] text-blue-900" />
-                        </div>
-                        <span>Dashboard</span>
-                    </SidebarMenuButton>
-                    <SidebarMenuButton onClick={() => router.push('/dashboard/agents')} className={`h-12 gap-3 hover:bg-slate-100 ${path == ('/dashboard/agents') ? 'bg-slate-100' : null}`}>
-                        <div className=" flex h-9 w-9 shrink-0 bg-green-100 items-center justify-center rounded-lg">
-                            <Bot className="h-[18px] w-[18px] text-green-900" />
-                        </div>
-                        <span>Agents</span>
-                    </SidebarMenuButton>
-                    <SidebarMenuButton onClick={() => router.push('/dashboard/run')} className={`h-12 gap-3 hover:bg-slate-100 ${path == ('/dashboard/run') ? 'bg-slate-100' : null}`}>
-                        <div className=" flex h-9 w-9 shrink-0 bg-red-100 items-center justify-center rounded-lg">
-                            <Play className="h-[18px] w-[18px] text-red-900" />
-                        </div>
-                        <span>Runs</span>
-                    </SidebarMenuButton>
-                    <SidebarMenuButton onClick={() => router.push('/dashboard/integrations')} className={`h-12 gap-3 hover:bg-slate-100 ${path == ('/dashboard/integrations') ? 'bg-slate-100' : null}`}>
-                        <div className=" flex h-9 w-9 shrink-0 bg-purple-100 items-center justify-center rounded-lg">
-                            <Blocks className="h-[18px] w-[18px] text-purple-900" />
-                        </div>
-                        <span>Integrations</span>
-                    </SidebarMenuButton>
-                    <SidebarMenuButton onClick={() => router.push('/dashboard/templates')} className={`h-12 gap-3 hover:bg-slate-100 ${path == ('/dashboard/templates') ? 'bg-slate-100' : null}`}>
-                        <div className=" flex h-9 w-9 shrink-0 bg-orange-100 items-center justify-center rounded-lg">
-                            <Layers className="h-[18px] w-[18px] text-orange-900" />
-                        </div>
-                        <span>Templates</span>
-                    </SidebarMenuButton>
 
+            <SidebarContent className="px-1">
+                <SidebarGroup className="gap-0.5">
+                    <SidebarGroupLabel className="label-mono">Workspace</SidebarGroupLabel>
+                    {workspaceLinks.map(renderLink)}
                 </SidebarGroup>
-                <SidebarGroup >
-                    <SidebarGroupLabel>Users</SidebarGroupLabel>
-                    <SidebarMenuButton onClick={() => router.push('/dashboard/settings')} className={`h-12 gap-3 hover:bg-slate-100 ${path == ('/dashboard/settings') ? 'bg-slate-100' : null}`}>
-                        <div className=" flex h-9 w-9 shrink-0 bg-gray-100 items-center justify-center rounded-lg">
-                            <Settings className="h-[18px] w-[18px] text-gray-900" />
-                        </div>
-                        <span>Settings</span>
-                    </SidebarMenuButton>
-                    <SidebarMenuButton onClick={() => router.push('/dashboard/profile')} className={`h-12 gap-3 hover:bg-slate-100 ${path == ('/dashboard/profile') ? 'bg-slate-100' : null}`}>
-                        <div className=" flex h-9 w-9 shrink-0 bg-yellow-100 items-center justify-center rounded-lg">
-                            <User2 className="h-[18px] w-[18px] text-yellow-900" />
-                        </div>
-                        <span>Profile</span>
-                    </SidebarMenuButton>
+                <SidebarGroup className="gap-0.5">
+                    <SidebarGroupLabel className="label-mono">You</SidebarGroupLabel>
+                    {accountLinks.map(renderLink)}
                 </SidebarGroup>
             </SidebarContent>
-            <SidebarFooter >
-                <div className="flex items-center p-2 gap-2.5">
+
+            <SidebarFooter className="border-t p-3">
+                <div className="flex items-center gap-2.5">
                     <UserButton />
-                    <span>{userDetail?.name}</span>
+                    <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{userDetail?.name}</p>
+                        <p className="truncate font-mono text-[11px] text-muted-foreground">{userDetail?.email}</p>
+                    </div>
                 </div>
             </SidebarFooter>
         </Sidebar>

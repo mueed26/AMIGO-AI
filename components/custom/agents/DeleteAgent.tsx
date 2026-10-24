@@ -1,6 +1,4 @@
-/**
- * dialog deletes an agent and its scheduled run records.
- */
+// Confirm dialog that deletes an agent and its scheduled runs.
 import { useState } from 'react'
 import {
     AlertDialog,
@@ -36,7 +34,7 @@ function DeleteAgent({ openAlert, agentId, closeAlert, refreshData }: props) {
             });
             // Pass false, not nothing, so the dialog's open state stays a boolean and it closes.
             closeAlert(false);
-            toast.add({ type: 'success', title: 'Agent deleted!' })
+            toast.add({ type: 'success', title: 'Agent deleted' })
             refreshData()
         } catch (e: any) {
             const error = e?.response?.data?.error;
@@ -54,17 +52,17 @@ function DeleteAgent({ openAlert, agentId, closeAlert, refreshData }: props) {
 
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogTitle>Delete this agent?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your Agent
-                        from our servers.
+                        It stops for good, along with any runs it has lined up. Past results
+                        go too. There's no undo.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => closeAlert(false)}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => deleteAgent()} disabled={loading}>
+                    <AlertDialogCancel onClick={() => closeAlert(false)}>Keep it</AlertDialogCancel>
+                    <AlertDialogAction variant='destructive' onClick={() => deleteAgent()} disabled={loading}>
                         {loading && <Loader2Icon className='animate-spin' />}
-                        Continue</AlertDialogAction>
+                        Delete</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

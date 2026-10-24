@@ -2,6 +2,7 @@
  * API route that returns connected-account details for a selected integration toolkit.
  */
 import { composio } from "@/lib/composio";
+import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     const connection = await composio.connectedAccounts.link(user?.primaryEmailAddress?.emailAddress ?? '', authConfig.id)
 
-    console.log(connection)
+    logger.info({ toolkit: slug }, "oauth link created");
 
     return NextResponse.json({
         redirectUrl: connection.redirectUrl

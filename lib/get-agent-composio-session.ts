@@ -5,6 +5,7 @@ import { CreatedAgentType } from "@/components/custom/agents/CreateAgent";
 import { composio } from "./composio";
 import { AgentConfig, db } from "@/db";
 import { eq } from "drizzle-orm";
+import { logFor } from "./logger";
 
 export async function getOrCreateAgentSession(agentConfig: CreatedAgentType, userEmail: string) {
 
@@ -45,8 +46,8 @@ export const getActiveConnectedAccounts = async (userEmail: string, toolSlugs: s
 }
 
 const SaveComposioSessionId = async (agentId: string, session: any) => {
-    const result = await db.update(AgentConfig).set({
+    await db.update(AgentConfig).set({
         composioSessionId: session.sessionId
     }).where(eq(AgentConfig.agentId, agentId));
-    console.log(result);
+    logFor({ agentId }).info("composio session saved");
 }

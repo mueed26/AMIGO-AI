@@ -1,11 +1,9 @@
 "use client"
 
-/**
- * Slide-over chat interface for the  existing agent.
- */
+// Slide-over chat for talking to a saved agent.
 
 import { useEffect, useRef, useState } from "react"
-import { ArrowUp, Loader2, Paperclip, Sparkles } from "lucide-react"
+import { ArrowUp, Loader2, Sparkles } from "lucide-react"
 
 import { Bubble, BubbleContent } from "@/components/ui/bubble"
 import { Button } from "@/components/ui/button"
@@ -114,7 +112,7 @@ function AgentChatDrawer({ agent, open, onOpenChange }: Props) {
                         <img
                             src={agent?.agentImage}
                             alt={agent?.name || "Agent"}
-                            className="size-11 rounded-xl bg-slate-100 object-cover p-1"
+                            className="size-10 rounded-md border bg-secondary object-cover p-1"
                         />
 
                         <div className="min-w-0">
@@ -123,7 +121,7 @@ function AgentChatDrawer({ agent, open, onOpenChange }: Props) {
                             </SheetTitle>
 
                             <SheetDescription className="text-xs">
-                                Chat with your agent and give it a task.
+                                Talk it through or hand it a one-off job.
                             </SheetDescription>
                         </div>
 
@@ -131,15 +129,15 @@ function AgentChatDrawer({ agent, open, onOpenChange }: Props) {
 
                 </SheetHeader>
 
-                <div className="min-h-0 flex-1 overflow-y-auto bg-muted/20 p-5">
+                <div className="bg-dots min-h-0 flex-1 overflow-y-auto p-5">
                     <div className="flex min-h-full flex-col justify-end gap-4">
                         <div className="mx-auto mb-4 max-w-sm text-center">
-                            <div className="mx-auto mb-3 flex size-11 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
+                            <div className="mx-auto mb-3 flex size-10 items-center justify-center rounded-md border border-signal/30 bg-signal/10 text-signal">
                                 <Sparkles className="size-5" />
                             </div>
 
                             <h2 className="text-sm font-medium">
-                                Start a chat with {agent?.name}
+                                Open a line to {agent?.name}
                             </h2>
 
                             <p className="mt-1 text-xs text-muted-foreground">
@@ -149,7 +147,7 @@ function AgentChatDrawer({ agent, open, onOpenChange }: Props) {
 
                         <AgentMessage
                             agent={agent}
-                            content={`Hi! I’m ${agent?.name}. What would you like me to work on?`}
+                            content={`Hey, ${agent?.name} here. What should I pick up?`}
                         />
 
                         {messages.map((message) =>
@@ -189,7 +187,7 @@ function AgentChatDrawer({ agent, open, onOpenChange }: Props) {
                                             <Loader2 className="size-4 animate-spin" />
 
                                             <span className="text-sm">
-                                                {agent?.name} is thinking...
+                                                {agent?.name} is working on it...
                                             </span>
                                         </div>
                                     </BubbleContent>
@@ -202,7 +200,7 @@ function AgentChatDrawer({ agent, open, onOpenChange }: Props) {
                 </div>
 
                 <div className="shrink-0 border-t bg-background p-4">
-                    <div className="rounded-2xl border p-2 shadow-sm focus-within:border-purple-400">
+                    <div className="rounded-lg border bg-panel p-2 focus-within:border-signal/60">
                         <Textarea
                             value={prompt}
                             onChange={(event) => setPrompt(event.target.value)}
@@ -227,21 +225,14 @@ function AgentChatDrawer({ agent, open, onOpenChange }: Props) {
                         />
 
                         <div className="flex items-center justify-between pt-1">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                aria-label="Attach a file"
-                            >
-                                <Paperclip className="size-4" />
-                            </Button>
+                            <span className="label-mono px-2">enter to send · shift+enter new line</span>
 
                             <Button
                                 type="button"
                                 size="icon"
                                 onClick={sendMessage}
                                 disabled={!prompt.trim() || isAgentReplying}
-                                className="rounded-full bg-purple-600 text-white hover:bg-purple-700"
+                                className="rounded-md"
                                 aria-label="Send message"
                             >
                                 {isAgentReplying ? (
@@ -275,13 +266,13 @@ function AgentMessage({
 
             <Bubble align="start" variant="outline">
                 <BubbleContent>
-                    {/* <p className="whitespace-pre-wrap break-words"> */}
-                    <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                    >
-                        {content}
-                    </ReactMarkdown>
-                    {/* </p> */}
+                    <div className="agent-markdown">
+                        <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                        >
+                            {content}
+                        </ReactMarkdown>
+                    </div>
                 </BubbleContent>
             </Bubble>
         </div>

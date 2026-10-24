@@ -1,8 +1,6 @@
 "use client"
 
-/**
- * Agent list component that fetches, displays, edits, chats with, and deletes saved agents.
- */
+// Agent list: fetches saved agents and lets you run, chat with, edit, pause or delete them.
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 
@@ -11,13 +9,11 @@ import {
     DropdownMenuContent,
     DropdownMenuGroup,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from '@/components/ui/button';
-import { Calendar, CalendarClockIcon, Ellipsis, Loader2, MessageCircle, Pause, Pencil, Play, PlaySquareIcon, Trash } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { CalendarClockIcon, Ellipsis, Loader2, MessageCircle, Pause, Pencil, Play, PlaySquareIcon, Trash } from 'lucide-react';
 import { toast } from '@/components/ui/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CreatedAgentType } from '@/components/custom/agents/CreateAgent';
@@ -70,15 +66,15 @@ function MyAgents() {
             });
 
             toast.add({
-                title: 'Agent running...',
-                description: 'Check the Runs page for the result.',
+                title: 'Agent clocked in',
+                description: 'Follow it in the run log.',
                 type: 'success'
             })
         } catch (error: any) {
             const message = error?.response?.data?.error;
             toast.add({
                 type: 'error',
-                title: typeof message === 'string' ? message : 'Unable to run agent'
+                title: typeof message === 'string' ? message : 'Could not start this agent'
             });
         } finally {
             setStartingAgentId(null);
@@ -88,77 +84,74 @@ function MyAgents() {
 
 
     return (
-        <div className='mt-5'>
-            <h2 className='font-bold text-2xl'>My Agents</h2>
-            <p className='text-sm text-muted-foreground mt-1'>Run, Manage and Update All the agents you've created.</p>
+        <div className='mt-6'>
+            <p className='label-mono'>roster</p>
+            <h2 className='mt-2 font-heading text-3xl font-semibold tracking-tight'>Your agents</h2>
+            <p className='mt-2 text-sm text-muted-foreground'>Start a run, talk to an agent, or change its hours.</p>
 
-            <div className='grid grid-cols-2 2xl:grid-cols-3 gap-5 mt-5'>
+            <div className='mt-6 divide-y overflow-hidden rounded-lg border bg-card'>
                 {myAgents === undefined && <AgentCardSkeletonList />}
 
+                {myAgents?.length === 0 && (
+                    <div className='p-8 text-center text-sm text-muted-foreground'>
+                        No agents yet. Head to <span className='text-foreground'>New agent</span> and describe your first job.
+                    </div>
+                )}
+
                 {myAgents?.map((agent, index) => (
-                    <div className='p-3 border rounded-2xl' key={agent.agentId ?? index}>
-                        <div className='flex justify-between items-center'>
+                    <div className='flex flex-col gap-4 p-4 sm:flex-row sm:items-center' key={agent.agentId ?? index}>
+                        <div className='flex min-w-0 flex-1 items-start gap-3'>
                             <img src={agent?.agentImage} alt={agent.name}
-                                width={30} height={30}
-                                className='p-2 border size-16 rounded-xl bg-slate-100' />
-                            <div>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger render={<Button variant={'ghost'} size={'icon'} />}>
-                                        <Ellipsis />
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuGroup>
-
-                                            <DropdownMenuItem><Play /> Run Now</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => updateAgentStatus(agent)}>
-                                                {agent?.status == 'active' ?
-                                                    <span className='flex items-center gap-1'><Pause /> Pause Agent</span> :
-                                                    <span className='flex items-center gap-1'><PlaySquareIcon />Active Agent</span>}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => { setOpendEditAgentSheet(true); setSelectedEditAgent(agent) }}>
-                                                <Pencil /> Edit Agent</DropdownMenuItem>
-
-                                        </DropdownMenuGroup>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem variant='destructive'
-                                                onClick={() => { setOpenDeleteAlert(true); setSelectedAgentId(agent.agentId) }}
-                                            > <Trash /> Delete Agent</DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                width={44} height={44}
+                                className='size-11 shrink-0 rounded-md border bg-secondary p-1.5' />
+                            <div className='min-w-0'>
+                                <div className='flex flex-wrap items-center gap-2'>
+                                    <h3 className='font-medium'>{agent.name}</h3>
+                                    <span className={`rounded border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider
+                                        ${agent?.status == 'pause' ? 'border-signal/30 text-signal' : 'border-ok/30 text-ok'}`}>
+                                        {agent?.status == 'pause' ? 'paused' : 'active'}
+                                    </span>
+                                </div>
+                                <p className='mt-0.5 line-clamp-1 text-sm text-muted-foreground'>{agent?.description}</p>
+                                <p className='mt-1.5 flex items-center gap-1.5 font-mono text-xs text-muted-foreground'>
+                                    <CalendarClockIcon className='size-3.5 text-signal' />
+                                    {agent?.schedule?.frequency}
+                                    {agent.schedule.type == 'recurring' && <span>at {agent?.schedule?.time}</span>}
+                                </p>
                             </div>
                         </div>
 
-                        <div className='my-2'>
-                            <h2 className='font-bold flex items-start justify-between gap-2'>{agent.name}
-                                <span className={`font-normal shrink-0
-                                 px-2 py-0.5  text-xs
-                                rounded-2xl ${agent?.status == 'pause' ? 'bg-yellow-100 text-yellow-600' : 'text-green-700 bg-green-100'}`}>
-                                    {(agent.status.toUpperCase())}</span> </h2>
-                            <p className='line-clamp-1 mt-1'>{agent?.description}</p>
-                            <div className='flex gap-1 items-center mt-4'>
-                                <CalendarClockIcon className='h-4 w-4 text-purple-700' />
-                                <p className='text-xs text-muted-foreground'>{agent?.schedule?.frequency}
-                                    {agent.schedule.type == 'recurring' &&
-                                        <span>
-                                            &nbsp; at {agent?.schedule?.time}
-                                        </span>}</p>
-                            </div>
-                            <Separator className={'my-3'} />
-                            <div className='flex flex-wrap items-center gap-2.5 w-full'>
-
-                                <Button variant={'outline'} className={'flex-1  mt-2'}
-                                    onClick={() => runAgent(agent)}
-                                    disabled={startingAgentId === agent.agentId}
-                                >{startingAgentId === agent.agentId ? <Loader2 className='animate-spin' /> : <Play />}Run Agent</Button>
-                                <Button className={'bg-purple-700 mt-2 flex-1'}
-                                    onClick={() => { setOpenChatDrawer(true); setSelectedEditAgent(agent) }}
-                                ><MessageCircle />Chat With Agent</Button>
-
-                            </div>
+                        <div className='flex shrink-0 items-center gap-2'>
+                            <Button variant={'outline'} size={'sm'}
+                                onClick={() => runAgent(agent)}
+                                disabled={startingAgentId === agent.agentId}
+                            >{startingAgentId === agent.agentId ? <Loader2 className='animate-spin' /> : <Play />}Run</Button>
+                            <Button size={'sm'}
+                                onClick={() => { setOpenChatDrawer(true); setSelectedEditAgent(agent) }}
+                            ><MessageCircle />Chat</Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger render={<Button variant={'ghost'} size={'icon-sm'} />}>
+                                    <Ellipsis />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align='end'>
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem onClick={() => updateAgentStatus(agent)}>
+                                            {agent?.status == 'active' ?
+                                                <span className='flex items-center gap-2'><Pause /> Pause</span> :
+                                                <span className='flex items-center gap-2'><PlaySquareIcon /> Resume</span>}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => { setOpendEditAgentSheet(true); setSelectedEditAgent(agent) }}>
+                                            <Pencil /> Tune settings</DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem variant='destructive'
+                                            onClick={() => { setOpenDeleteAlert(true); setSelectedAgentId(agent.agentId) }}
+                                        ><Trash /> Delete</DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
-
                     </div>
                 ))}
 
@@ -184,8 +177,6 @@ function MyAgents() {
                 refreshData={() => AllUsersAgent()}
             />
 
-
-
         </div>
     )
 }
@@ -193,26 +184,16 @@ function MyAgents() {
 function AgentCardSkeletonList() {
     return (
         <>
-            {Array.from({ length: 4 }).map((_, index) => (
-                <div className='p-3 border rounded-2xl' key={index}>
-                    <div className='flex justify-between items-center'>
-                        <Skeleton className='size-16 rounded-xl' />
-                        <Skeleton className='size-9 rounded-md' />
+            {Array.from({ length: 3 }).map((_, index) => (
+                <div className='flex items-center gap-3 p-4' key={index}>
+                    <Skeleton className='size-11 rounded-md' />
+                    <div className='flex-1'>
+                        <Skeleton className='h-4 w-40' />
+                        <Skeleton className='mt-2 h-3 w-full max-w-sm' />
+                        <Skeleton className='mt-2 h-3 w-28' />
                     </div>
-
-                    <div className='my-2'>
-                        <div className='flex items-center gap-2'>
-                            <Skeleton className='h-5 w-32' />
-                            <Skeleton className='h-5 w-16 rounded-2xl' />
-                        </div>
-                        <Skeleton className='mt-2 h-4 w-full' />
-                        <Skeleton className='mt-4 h-4 w-40' />
-                        <Skeleton className='my-3 h-px w-full' />
-                        <div className='flex items-center gap-2.5 w-full'>
-                            <Skeleton className='mt-2 h-9 flex-1 rounded-md' />
-                            <Skeleton className='mt-2 h-9 flex-1 rounded-md' />
-                        </div>
-                    </div>
+                    <Skeleton className='h-8 w-16 rounded-md' />
+                    <Skeleton className='h-8 w-16 rounded-md' />
                 </div>
             ))}
         </>

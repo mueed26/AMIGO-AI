@@ -7,6 +7,7 @@ import { calculateNextDailyRun } from "@/lib/agent-schedule";
 import { executeAgent } from "@/lib/execute-agent";
 import { and, asc, eq, gte, lte } from "drizzle-orm";
 import { inngest } from "./client";
+import { logFor } from "@/lib/logger";
 
 //finds due work everyt 15 mins
 
@@ -58,6 +59,7 @@ export const ProcessScheduledAgent = inngest.createFunction(
                     )
                     .returning();
 
+                if (result[0]) logFor({ runId: run.id, agentId: run.agentId }).info("run claimed by scheduler");
                 return result[0] ?? null;
             });
 
@@ -159,6 +161,7 @@ export const ExecuteScheduledAgent = inngest.createFunction(
                         )
                         .returning();
 
+                    if (result[0]) logFor({ runId: run.id, agentId: run.agentId }).info("run started");
                     return result[0] ?? null;
                 },
             );
@@ -210,7 +213,8 @@ If the objective mentions daily, recurring, schedule, or a time, treat that only
                         agentConfig.composioSessionId ?? undefined,
                 };
 
-                return await executeAgent({
+                const started = Date.now();
+                const result = await executeAgent({
                     agentConfig: executableAgentConfig,
                     userEmail: run.userEmail,
                     input: [
@@ -220,6 +224,8 @@ If the objective mentions daily, recurring, schedule, or a time, treat that only
                         executableAgentConfig.objective,
                     ].join("\n"),
                 });
+                logFor({ runId: run.id, agentId: run.agentId }).info({ durationMs: Date.now() - started }, "agent finished");
+                return result;
             });
 
             // Step 6: Persist the successful output back to the AgentRun row.
@@ -297,6 +303,7 @@ If the objective mentions daily, recurring, schedule, or a time, treat that only
 
             // Step 9: Persist failures so the run does not stay stuck as queued/running.
             await step.run(`mark-run-failed-${run.id}`, async () => {
+                logFor({ runId: run.id, agentId: run.agentId }).error({ err: message }, "run failed");
                 await db
                     .update(AgentRun)
                     .set({

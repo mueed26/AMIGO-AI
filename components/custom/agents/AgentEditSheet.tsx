@@ -1,8 +1,6 @@
 "use client"
 
-/**
- * Agent editor sheet for updating instructions, schedule, skills, status, image, and tool connections.
- */
+// Side sheet for editing an agent: name, goal, schedule, skills, avatar and app sign-ins.
 
 import React, { useEffect, useMemo, useState } from "react"
 
@@ -247,13 +245,14 @@ function AgentEditSheet({
                             />
 
                             <div>
-                                <SheetTitle>
-                                    Edit Agent
+                                <p className="label-mono">agent settings</p>
+                                <SheetTitle className="mt-1 font-heading text-xl">
+                                    Tune this agent
                                 </SheetTitle>
 
                                 <SheetDescription>
-                                    Update how this agent looks,
-                                    works and runs.
+                                    Change its job, its hours and
+                                    the apps it can reach.
                                 </SheetDescription>
                             </div>
                         </div>
@@ -263,7 +262,7 @@ function AgentEditSheet({
                         <div className="space-y-6 p-5">
 
                             {/* Image */}
-                            <section className="flex items-center gap-4 rounded-2xl border bg-muted/30 p-4">
+                            <section className="flex items-center gap-4 rounded-lg border bg-muted/30 p-4">
                                 <img
                                     src={
                                         draftAgent.agentImage ??
@@ -273,7 +272,7 @@ function AgentEditSheet({
                                         draftAgent.name ??
                                         "Agent"
                                     }
-                                    className="size-20 rounded-2xl border bg-white p-2 object-cover"
+                                    className="size-20 rounded-lg border bg-secondary p-2 object-cover"
                                 />
 
                                 <div className="space-y-2">
@@ -283,7 +282,7 @@ function AgentEditSheet({
                                         </p>
 
                                         <p className="text-xs text-muted-foreground">
-                                            Shuffle to generate a new look
+                                            Roll the dice for a new avatar
                                         </p>
                                     </div>
 
@@ -294,7 +293,7 @@ function AgentEditSheet({
                                         onClick={shuffleImage}
                                     >
                                         <Shuffle className="size-4" />
-                                        Shuffle Image
+                                        New avatar
                                     </Button>
                                 </div>
                             </section>
@@ -302,7 +301,7 @@ function AgentEditSheet({
                             {/* Name */}
                             <section className="space-y-2">
                                 <Label htmlFor="agent-name">
-                                    Agent Name
+                                    Name
                                 </Label>
 
                                 <Input
@@ -314,7 +313,7 @@ function AgentEditSheet({
                                             event.target.value
                                         )
                                     }
-                                    placeholder="Give your agent a name"
+                                    placeholder="e.g. Morning inbox digest"
                                 />
                             </section>
 
@@ -322,7 +321,7 @@ function AgentEditSheet({
                             <section className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="agent-objective">
-                                        Objective
+                                        Goal
                                     </Label>
 
                                     <Textarea
@@ -336,7 +335,7 @@ function AgentEditSheet({
                                                 event.target.value
                                             )
                                         }
-                                        placeholder="What should this agent accomplish?"
+                                        placeholder="What does a good run look like?"
                                         className="min-h-24 resize-y"
                                     />
                                 </div>
@@ -358,22 +357,22 @@ function AgentEditSheet({
                                                 event.target.value
                                             )
                                         }
-                                        placeholder="Add detailed instructions and guardrails"
+                                        placeholder="Step-by-step notes, rules, things to avoid"
                                         className="min-h-32 resize-y"
                                     />
                                 </div>
                             </section>
 
                             {/* Schedule */}
-                            <section className="space-y-4 rounded-2xl border p-4">
+                            <section className="space-y-4 rounded-lg border p-4">
                                 <div>
                                     <h3 className="font-medium">
-                                        Schedule
+                                        Working hours
                                     </h3>
 
                                     <p className="text-xs text-muted-foreground">
-                                        Choose when and how often this
-                                        agent runs.
+                                        Pick when it clocks in and how
+                                        often.
                                     </p>
                                 </div>
 
@@ -381,7 +380,7 @@ function AgentEditSheet({
 
                                     <div className="space-y-2">
                                         <Label>
-                                            Run Type
+                                            Mode
                                         </Label>
 
                                         <Select
@@ -422,7 +421,7 @@ function AgentEditSheet({
 
                                     <div className="space-y-2">
                                         <Label htmlFor="schedule-time">
-                                            Time
+                                            Start time
                                         </Label>
 
                                         <Input
@@ -450,7 +449,7 @@ function AgentEditSheet({
 
                                     <div className="space-y-2 sm:col-span-2">
                                         <Label>
-                                            Frequency
+                                            Repeats
                                         </Label>
 
                                         <Select
@@ -515,8 +514,8 @@ function AgentEditSheet({
                                     </h3>
 
                                     <p className="text-xs text-muted-foreground">
-                                        Add or remove capabilities this
-                                        agent should use.
+                                        Short tags for what this agent is
+                                        good at.
                                     </p>
                                 </div>
 
@@ -568,7 +567,7 @@ function AgentEditSheet({
                                                 addSkill()
                                             }
                                         }}
-                                        placeholder="Add a skill"
+                                        placeholder="Add a tag and press enter"
                                     />
 
                                     <Button
@@ -586,19 +585,19 @@ function AgentEditSheet({
                             <section className="space-y-3">
                                 <div>
                                     <h3 className="font-medium">
-                                        Connected Tools
+                                        Apps it can use
                                     </h3>
 
                                     <p className="text-xs text-muted-foreground">
                                         {ConnectedTools.length} of{" "}
-                                        {tools.length} connected
+                                        {tools.length} signed in
                                     </p>
                                 </div>
 
                                 <div className="space-y-2">
                                     {loadingTools &&
-                                        <div className="p-2 border rounded-2xl flex items-center">
-                                            <Loader2Icon className="animate-spin" /> Loading Tools....
+                                        <div className="p-2 border rounded-lg flex items-center">
+                                            <Loader2Icon className="animate-spin" /> Checking connections...
                                         </div>
                                     }
                                     {tools.map((tool, index) => (
@@ -609,7 +608,7 @@ function AgentEditSheet({
                                             <div className="flex items-center gap-3">
                                                 <div className="flex size-9 items-center justify-center rounded-lg bg-muted">
                                                     {/* {tool.connected ? (
-                                                        <Link2 className="size-4 text-emerald-600" />
+                                                        <Link2 className="size-4 text-ok" />
                                                     ) : (
                                                         <Unlink className="size-4 text-muted-foreground" />
                                                     )} */}
@@ -625,13 +624,13 @@ function AgentEditSheet({
 
                                                     <p
                                                         className={`text-xs ${tool.connected
-                                                            ? "text-emerald-600"
+                                                            ? "text-ok"
                                                             : "text-muted-foreground"
                                                             }`}
                                                     >
                                                         {tool.connected
-                                                            ? <span className="text-green-500">Connected</span>
-                                                            : <span className="text-red-500">Not connected</span>}
+                                                            ? <span className="text-ok">Signed in</span>
+                                                            : <span className="text-muted-foreground">Not signed in</span>}
                                                     </p>
                                                 </div>
                                             </div>
@@ -649,8 +648,8 @@ function AgentEditSheet({
                                             >
                                                 {disconnectingSlug === tool.slug && <Loader2 className="animate-spin" />}
                                                 {tool.connected
-                                                    ? "Disconnect"
-                                                    : "Connect"}
+                                                    ? "Sign out"
+                                                    : "Sign in"}
                                             </Button>
                                         </div>
                                     ))}
@@ -660,7 +659,7 @@ function AgentEditSheet({
                             {/* Output */}
                             <section className="space-y-2">
                                 <Label htmlFor="output-format">
-                                    Output Format
+                                    How to hand back results
                                 </Label>
 
                                 <Textarea
@@ -675,7 +674,7 @@ function AgentEditSheet({
                                             event.target.value
                                         )
                                     }
-                                    placeholder="Describe how the result should be formatted"
+                                    placeholder="e.g. Short bullet list, link to the doc at the end"
                                     className="min-h-24 resize-y"
                                 />
                             </section>
@@ -690,9 +689,9 @@ function AgentEditSheet({
 
                             <Button
                                 type="submit"
-                                className="bg-purple-700 hover:bg-purple-800"
+                                className=""
                             >
-                                Save Changes
+                                Save agent
                             </Button>
                         </div>
                     </SheetFooter>

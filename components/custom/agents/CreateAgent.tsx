@@ -1,11 +1,9 @@
 "use client"
 
-/**
- * Agent creation workflow that collects a user prompt and handles AI-generated configuration results.
- */
+// Agent creation flow: takes the prompt, asks follow-up questions if needed, and shows the saved agent.
 import { Button } from '@/components/ui/button'
 import axios from 'axios'
-import { ArrowUp, BriefcaseBusiness, Loader2, Loader2Icon, Mail, Plus, Search } from 'lucide-react'
+import { ArrowUp, BriefcaseBusiness, Loader2, Loader2Icon, Mail, Search } from 'lucide-react'
 import React, { useState } from 'react'
 
 import { toast } from '@/components/ui/toast'
@@ -14,55 +12,45 @@ import AIAgentQuestions from '@/components/custom/agents/AIAgentQuestions'
 
 const quickSuggestions = [
     {
-        label: "Find AI Jobs",
-        prompt: "Find the latest AI developer jobs posted this week that match my skills and summarize the best opportunities for me.",
+        label: "Job hunt",
+        prompt: "Every morning, look for new AI engineering roles posted in the last 24 hours that fit my skills and send me the five best with links.",
     },
     {
-        label: "Inbox Summary",
-
-        prompt: "Check my inbox and summarize the most important emails, especially anything that requires my reply or attention.",
+        label: "Inbox triage",
+        prompt: "Go through my inbox and pull out the emails that need a reply from me today, with a one-line summary of each.",
     },
     {
-        label: "Research Topic",
-        prompt: "Research a topic across the web, compare multiple sources, and give me a concise summary with the most important findings.",
+        label: "Deep dive",
+        prompt: "Research a topic across several sources on the web and give me a short brief with the key points and where each one came from.",
     },
     {
-        label: "Plan My Day",
-        prompt: "Check my calendar and upcoming tasks, then create a prioritized plan for everything I should focus on today.",
+        label: "Day planner",
+        prompt: "Look at my calendar for today and put together a simple plan with what to focus on first and what can wait.",
     },
     {
-        label: "Reddit Trends",
-        prompt: "Find trending Reddit discussions about AI tools and agents, then summarize the most useful and interesting conversations.",
+        label: "Reddit pulse",
+        prompt: "Find the most talked-about Reddit threads about AI agents this week and summarise what people are saying.",
     },
 ]
 
 const templates = [
     {
-        title: "Find latest jobs",
-        description: "Search the web for the latest jobs matching my profile.",
+        title: "Job radar",
+        description: "Scans fresh postings and shortlists the ones worth applying to.",
+        prompt: "Every weekday at 9am, search the web for new full-stack and AI engineering jobs posted in the last day and send me a shortlist with links.",
         icon: BriefcaseBusiness,
-        iconBg: "bg-orange-100",
-        iconColor: "text-orange-600",
-        border: "hover:border-orange-300",
-        glow: "hover:shadow-orange-100",
     },
     {
-        title: "Daily inbox summary",
-        description: "Summarize important emails and highlight what needs my attention.",
+        title: "Morning inbox digest",
+        description: "Reads overnight mail and tells you what actually needs you.",
+        prompt: "Every morning at 7am, read my new Gmail messages and save a short digest of what needs my attention to a Google Doc.",
         icon: Mail,
-        iconBg: "bg-blue-100",
-        iconColor: "text-blue-600",
-        border: "hover:border-blue-300",
-        glow: "hover:shadow-blue-100",
     },
     {
-        title: "Research a topic",
-        description: "Search the web and create a useful research summary for me.",
+        title: "Topic brief",
+        description: "Pulls a few good sources together into one short write-up.",
+        prompt: "Research a topic I give you across multiple websites and write a one-page brief with sources at the end.",
         icon: Search,
-        iconBg: "bg-purple-100",
-        iconColor: "text-purple-600",
-        border: "hover:border-purple-300",
-        glow: "hover:shadow-purple-100",
     },
 ]
 
@@ -121,7 +109,7 @@ function CreateAgent() {
         if (!prompt.trim()) {
             toast.add({
                 type: 'error',
-                title: 'Prompt is required'
+                title: 'Tell it what to do first'
             })
             return;
         }
@@ -175,61 +163,56 @@ function CreateAgent() {
         }
     }
     return (
-        <div className='mt-5'>
+        <div className='mt-6'>
             <div>
-                <h2 className='text-2xl font-semibold tracking-tight'>Create New Agent</h2>
-                <p className='mt-1 text-sm text-muted-foreground'>Ask what type of agent you want to create, Type your goal, task, or workflow</p>
+                <p className='label-mono'>new agent</p>
+                <h2 className='mt-2 font-heading text-3xl font-semibold tracking-tight'>What should it take off your plate?</h2>
+                <p className='mt-2 text-sm text-muted-foreground'>Describe the job in plain words: what to do, which apps to use, and when. AMIGO fills in the rest.</p>
             </div>
-            {/* Prompt Box  */}
 
-            <div className='w-full border rounded-2xl bg-background p-3 mt-3
-            shadow-lg shadow-purple-100 hover:shadow-purple-200'>
-                <textarea placeholder='Describe the agent you want to create...'
-                    className='min-h-[90px] w-full resize-none bg-transparent px-2 py-2 text-sm outline-none'
+            <div className='mt-5 rounded-lg border bg-panel p-3 transition-colors focus-within:border-signal/60'>
+                <textarea placeholder='e.g. Every morning at 7, read my new emails and save a short digest to Google Docs'
+                    className='min-h-[100px] w-full resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground/70'
                     value={prompt}
                     onChange={(event) => setPrompt(event.target.value)}
                 />
-                <div className='flex justify-between items-center'>
-                    <div>
-                        <Button variant={'ghost'} size={'icon'}>
-                            <Plus />
-                        </Button>
-                    </div>
+                <div className='flex items-center justify-between border-t pt-3'>
+                    <span className='label-mono px-2'>{prompt.length} chars</span>
                     <Button
                         disabled={loading}
-                        onClick={OnSubmit} size={'icon'} className={'h-9 w-9 rounded-full bg-purple-600'}>
+                        onClick={OnSubmit}>
                         {loading ? <Loader2 className='animate-spin' /> : <ArrowUp />}
+                        Build agent
                     </Button>
                 </div>
             </div>
 
-            <div className='mt-3 flex gap-2'>
+            <div className='mt-3 flex flex-wrap gap-2'>
                 {quickSuggestions.map((suggestion, index) => (
-                    <Button variant={'outline'} key={index}
+                    <button key={index}
                         onClick={() => setPrompt(suggestion.prompt)}
-                        className='hover:text-purple-700 hover:bg-purple-200 hover:border-purple-700'>
-                        {suggestion.label}
-                    </Button>
+                        className='rounded-full border px-3 py-1 font-mono text-xs text-muted-foreground transition-colors hover:border-signal/50 hover:text-signal'>
+                        + {suggestion.label}
+                    </button>
                 ))}
             </div>
 
 
-            {loading ? <div className='flex gap-2 items-center p-5 mt-7 border rounded-xl shadow'>
-                <Loader2Icon className='animate-spin' />
-                <h2>Generating Agent Config...</h2>
+            {loading ? <div className='bg-scan mt-8 flex items-center gap-3 rounded-lg border bg-panel p-5 font-mono text-sm'>
+                <Loader2Icon className='size-4 animate-spin text-signal' />
+                <span>Drafting the agent: picking apps, writing its instructions...</span>
             </div> :
 
-                !configResult && <div className='mt-10'>
-                    <h2 className='flex text-lg justify-between items-center font-semibold'>Get Started <span className='text-sm font-medium'>View All</span></h2>
-                    <div className='grid grid-cols-1 gap-4 md:grid-cols-3 mt-3'>
+                !configResult && <div className='mt-12'>
+                    <p className='label-mono'>or start from one of these</p>
+                    <div className='mt-3 grid grid-cols-1 gap-3 md:grid-cols-3'>
                         {templates.map((template, index) => (
-                            <div key={index} className={`border rounded-2xl p-5 hover:cursor-pointer hover:shadow-lg ${template.border} ${template.glow}`}>
-                                <template.icon className={`h-12 w-12 p-2 ${template.iconBg} ${template.iconColor} rounded-xl  `} />
-                                <div className='mt-6'>
-                                    <h2 className='font-semibold text-foreground'>{template.title}</h2>
-                                    <p className='text-sm mt-2 leading-5 text-muted-foreground'>{template.description}</p>
-                                </div>
-                            </div>
+                            <button key={index} onClick={() => setPrompt(template.prompt)}
+                                className='group rounded-lg border bg-card p-4 text-left transition-colors hover:border-signal/50'>
+                                <template.icon className='size-5 text-muted-foreground transition-colors group-hover:text-signal' />
+                                <h3 className='mt-6 font-medium'>{template.title}</h3>
+                                <p className='mt-1.5 text-sm leading-5 text-muted-foreground'>{template.description}</p>
+                            </button>
                         ))}
                     </div>
                 </div>}
@@ -237,7 +220,7 @@ function CreateAgent() {
             {configResult &&
                 configResult.status == 'needs_clarification'
                 &&
-                <div className='p-5 border rounded-2xl mt-5'>
+                <div className='mt-6 rounded-lg border bg-card p-5'>
                     <AIAgentQuestions
                         questionList={configResult.clarificationQuestions}
                         onComplete={(resp: any) => onComplete(resp)}
@@ -245,11 +228,6 @@ function CreateAgent() {
                 </div>
 
             }
-
-            {/* <p>{JSON.stringify(configResult)}</p> */}
-
-
-
 
             {createdAgent && <NewAgentCard createdAgent={createdAgent}
                 setUpdatedAgent={(value: CreatedAgentType) => setCreatedAgent(value)} />}

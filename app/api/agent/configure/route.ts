@@ -10,6 +10,7 @@ import { AgentConfig, AgentRun, db, tools } from "@/db";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { calculateNextDailyRun } from "@/lib/agent-schedule";
 import { getOwnedAgent } from "@/lib/get-owned-agent";
+import { logFor, logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
 
@@ -82,17 +83,16 @@ export async function POST(req: NextRequest) {
                     timezone: timezone
                 }) : null
 
-            console.log("firstRun", firstRun);
             if (firstRun) {
-                const runInsert = await db.insert(AgentRun)
+                await db.insert(AgentRun)
                     .values({
                         agentId,
                         userEmail: userEmail,
                         scheduledFor: firstRun,
                         timezone: timezone,
                         status: 'scheduled',
-                    }).returning();
-                console.log(runInsert)
+                    });
+                logFor({ agentId, userEmail }).info({ scheduledFor: firstRun }, "first daily run scheduled");
             }
 
 
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(JSON.parse(response.text ?? '{}'));
     } catch (e) {
-        console.error('Error', e);
+        logger.error({ err: e instanceof Error ? e.message : String(e), userEmail }, 'agent configure failed');
         const message = e instanceof Error ? e.message : String((e as any)?.message ?? e);
         return NextResponse.json({ error: message }, { status: 500 })
     }
@@ -177,7 +177,7 @@ export async function PUT(req: NextRequest) {
         return NextResponse.json(updatedAgent)
     }
     catch (e) {
-        console.error('Agent update error', e);
+        logger.error({ err: e instanceof Error ? e.message : String(e), agentId: agentConfig?.agentId }, 'agent update failed');
         const message = e instanceof Error ? e.message : String((e as any)?.message ?? e);
         return NextResponse.json({ error: message }, { status: 500 })
     }

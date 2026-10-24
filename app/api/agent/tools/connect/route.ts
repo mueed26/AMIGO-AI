@@ -6,6 +6,7 @@
 import { composio } from "@/lib/composio";
 import { getActiveConnectedAccounts, getOrCreateAgentSession } from "@/lib/get-agent-composio-session";
 import { getOwnedAgent } from "@/lib/get-owned-agent";
+import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
             redirectUrl: connectionRequest.redirectUrl
         })
     } catch (e) {
-        console.error('Tool connect error', e);
+        logger.error({ err: e instanceof Error ? e.message : String(e) }, 'tool connect failed');
         const message = e instanceof Error ? e.message : String((e as any)?.message ?? e);
         return NextResponse.json({ error: message }, { status: 500 })
     }
@@ -75,7 +76,7 @@ export async function DELETE(req: NextRequest) {
         await composio.connectedAccounts.delete(sessionConnectedAccountId);
         return NextResponse.json({ success: true })
     } catch (e) {
-        console.error('Tool disconnect error', e);
+        logger.error({ err: e instanceof Error ? e.message : String(e) }, 'tool disconnect failed');
         const message = e instanceof Error ? e.message : String((e as any)?.message ?? e);
         return NextResponse.json({ error: message }, { status: 500 })
     }

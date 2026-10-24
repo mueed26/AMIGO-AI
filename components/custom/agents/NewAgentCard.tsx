@@ -1,20 +1,8 @@
-/**
- * Success card displayed after an agent is generated and saved.
- */
+// Card shown right after an agent is generated and saved.
 import React from 'react'
 
-import { Calendar } from '@/components/ui/calendar'
-import { CalendarCheck2Icon, Delete, Ellipsis, Pause, Pencil, Play, Trash } from 'lucide-react'
+import { CalendarClock, CheckCircle2, Pencil } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import AgentEditSheet from './AgentEditSheet'
 import { CreatedAgentType } from './CreateAgent'
 
@@ -25,54 +13,41 @@ type Props = {
 }
 
 function NewAgentCard({ createdAgent, setUpdatedAgent }: Props) {
+    const schedule = createdAgent?.schedule
+
     return (
-        <div className='flex items-center justify-between border mt-7 p-4 rounded-2xl shadow-md hover:shadow-purple-100 '>
-            <div className='flex gap-4 items-center'>
-                <img src={createdAgent?.agentImage} alt={createdAgent?.name}
-                    width={80} height={80}
-                    className='p-2 bg-slate-100 rounded-xl' />
-                <div className='flex flex-col gap-1'>
-                    <h2 className='font-bold text-[16px] flex gap-2 items-center '>{createdAgent?.name}
-                        <span className='text-green-700 bg-green-100 text-sm rounded-2xl px-2'>{createdAgent?.status}</span>
-                    </h2>
-                    <p className='text-muted-foreground text-md line-clamp-1'>{createdAgent?.description}</p>
-                    <div className='flex gap-3  items-center text-muted-foreground text-sm items-center mt-2'>
-                        <div className='flex gap-2 items-center'>
-                            <CalendarCheck2Icon /> Next Run on {createdAgent?.schedule?.time}
-                        </div>
-                        <h2>Runs {createdAgent?.schedule?.frequency}</h2>
-                    </div>
-                </div>
+        <div className='mt-8 overflow-hidden rounded-lg border border-ok/30 bg-card'>
+            <div className='flex items-center gap-2 border-b border-ok/20 bg-ok/5 px-4 py-2.5'>
+                <CheckCircle2 className='size-4 text-ok' />
+                <span className='label-mono text-ok'>agent saved and ready</span>
             </div>
 
-            <div className='flex gap-2 items-center text-muted-foreground '>
+            <div className='flex items-start justify-between gap-4 p-4'>
+                <div className='flex min-w-0 gap-4'>
+                    <img src={createdAgent?.agentImage} alt={createdAgent?.name}
+                        width={64} height={64}
+                        className='size-16 shrink-0 rounded-lg border bg-secondary p-2' />
+                    <div className='min-w-0'>
+                        <h2 className='font-heading text-lg font-semibold'>{createdAgent?.name}</h2>
+                        <p className='mt-0.5 line-clamp-2 text-sm text-muted-foreground'>{createdAgent?.description}</p>
+                        <p className='mt-3 flex items-center gap-2 font-mono text-xs text-muted-foreground'>
+                            <CalendarClock className='size-3.5 text-signal' />
+                            {schedule?.type == 'recurring' ? `${schedule?.frequency} at ${schedule?.time}` : 'runs when you start it'}
+                        </p>
+                    </div>
+                </div>
 
                 <AgentEditSheet agentConfig={createdAgent}
                     setUpdatedAgent={setUpdatedAgent}>
-                    <Button variant={'ghost'} size={'icon'}>
-                        <Pencil />
+                    <Button variant={'outline'} size={'sm'}>
+                        <Pencil /> Tune
                     </Button>
                 </AgentEditSheet>
-
-                <DropdownMenu>
-                    <DropdownMenuTrigger render={<Button variant={'ghost'} size={'icon'} />}>
-                        <Ellipsis />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuGroup>
-
-                            <DropdownMenuItem><Play /> Run Now</DropdownMenuItem>
-                            <DropdownMenuItem><Pause /> Pause Agent</DropdownMenuItem>
-                            <DropdownMenuItem> <Pencil /> Edit Agent</DropdownMenuItem>
-
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem variant='destructive'> <Trash /> Delete Agent</DropdownMenuItem>
-                        </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                </DropdownMenu>
             </div>
+
+            <p className='border-t px-4 py-2.5 text-xs text-muted-foreground'>
+                Run it, chat with it or pause it from the <span className='text-foreground'>My agents</span> tab.
+            </p>
         </div>
     )
 }

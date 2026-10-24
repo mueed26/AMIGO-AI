@@ -13,8 +13,14 @@ async function Dashboardlayout({ children }: any) {
     return (
         <SidebarProvider>
             <AppSidebar />
-            <SidebarTrigger />
-            <div className='min-w-0 flex-1 overflow-x-hidden'>{children}</div>
+            <div className='relative min-w-0 flex-1 overflow-x-hidden'>
+                <div className='bg-dots pointer-events-none absolute inset-x-0 top-0 h-80 [mask-image:linear-gradient(to_bottom,black,transparent)]' />
+                <div className='sticky top-0 z-10 flex h-12 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur'>
+                    <SidebarTrigger className='text-muted-foreground' />
+                    <span className='label-mono'>amigo / console</span>
+                </div>
+                <div className='relative'>{children}</div>
+            </div>
         </SidebarProvider>
     )
 }
