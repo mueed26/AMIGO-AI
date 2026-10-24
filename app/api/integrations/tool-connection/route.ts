@@ -1,7 +1,7 @@
 /**
  * API route that returns connected-account details for a selected integration toolkit.
  */
-import { composio } from "@/lib/composio";
+import { getComposio } from "@/lib/composio";
 import { logger } from "@/lib/logger";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -12,9 +12,9 @@ export async function POST(req: NextRequest) {
 
     const { slug } = await req.json();
 
-    const authConfig = await composio.authConfigs.create(slug);
+    const authConfig = await getComposio().authConfigs.create(slug);
 
-    const connection = await composio.connectedAccounts.link(user?.primaryEmailAddress?.emailAddress ?? '', authConfig.id)
+    const connection = await getComposio().connectedAccounts.link(user?.primaryEmailAddress?.emailAddress ?? '', authConfig.id)
 
     logger.info({ toolkit: slug }, "oauth link created");
 
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
     const { connectedAccountId } = await req.json();
 
-    await composio.connectedAccounts.disable(connectedAccountId);
+    await getComposio().connectedAccounts.disable(connectedAccountId);
 
     return NextResponse.json({ 'success': true })
 }

@@ -1,0 +1,66 @@
+# Runs the whole AMIGO AI stack locally in containers: web app, worker, and a self-hosted Inngest server.
+# Start:  docker compose up --build      Stop:  docker compose down
+# The database (Neon) and AI/tool APIs stay in the cloud; their keys come from .env.
+
+services:
+  # The web app: UI pages and API routes. This is what your browser talks to.
+  web:
+    build:
+      context: .
+      args:
+        # Public browser values, read from .env and baked in at build time.
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    image: amigo-ai:1.0.0
+    env_file: .env
+    environment:
+      SERVICE_NAME: amigo-web
+      POD_NAME: amigo-web
+      # Send events to the Inngest container instead of localhost
+      INNGEST_DEV: http://inngest:8288
+      # Node's fetch gives each server address only 250 ms to connect before trying the next one.
+      # From inside Docker to Neon (AWS us-east-2) a connection takes ~0.6-2.4 s, so every attempt was cut off (ETIMEDOUT).
+      NODE_OPTIONS: --network-family-autoselection-attempt-timeout=3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      inngest:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - amigo
+
+  # The worker: same image, but this is the copy Inngest calls to actually run agents.
+  # No public port, only reachable inside the Docker network.
+  worker:
+    image: amigo-ai:1.0.0
+    pull_policy: never
+    env_file: .env
+    environment:
+      SERVICE_NAME: amigo-worker
+      POD_NAME: amigo-worker
+      INNGEST_DEV: http://inngest:8288
+      # Same connect-timeout fix as web (see above)
+      NODE_OPTIONS: --network-family-autoselection-attempt-timeout=3000
+    expose:
+      - "3000"
+    depends_on:
+      - web
+    restart: unless-stopped
+    networks:
+      - amigo
+
+  # Self-hosted Inngest: the queue, scheduler and retry engine. It calls the worker's /api/inngest to run each step.
+  inngest:
+    image: inngest/inngest:v1.49.0
+    command: inngest dev -u http://worker:3000/api/inngest --no-discovery
+    ports:
+      - "8288:8288"
+    restart: unless-stopped
+    networks:
+      - amigo
+
+# A private network so containers can find each other by name (web, worker, inngest).
+networks:
+  amigo:
+    driver: bridge

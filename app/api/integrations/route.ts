@@ -2,7 +2,7 @@
  * API route that lists all available integration tools grouped for the integrations page.
  */
 import { db, tools } from "@/db";
-import { composio } from "@/lib/composio";
+import { getComposio } from "@/lib/composio";
 import { currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
     const slugs = toolsResult.map((tool) => tool.slug)
     //Get User Connected Tools List using Composio
-    const accounts = await composio.connectedAccounts.list({
+    const accounts = await getComposio().connectedAccounts.list({
         userIds: [user?.primaryEmailAddress?.emailAddress ?? ''],
         toolkitSlugs: slugs
     })

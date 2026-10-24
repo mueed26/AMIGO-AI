@@ -1,0 +1,28 @@
+# Files Docker should never copy into the build (keeps the image small and secrets out of it)
+
+# Installed packages and build output are recreated inside the image
+node_modules
+.next
+out
+
+# Secrets: passed in at run time, never baked into the image
+.env
+.env.*
+!.env.example
+
+# Git, editor and OS clutter
+.git
+.gitignore
+.vscode
+.idea
+.claude
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Docker and Kubernetes files aren't needed inside the image
+Dockerfile
+.dockerignore
+docker-compose*.yml
+k8s

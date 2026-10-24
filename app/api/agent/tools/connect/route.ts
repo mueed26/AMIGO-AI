@@ -3,7 +3,7 @@
  */
 
 //thsi file handles thereal OAuth
-import { composio } from "@/lib/composio";
+import { getComposio } from "@/lib/composio";
 import { getActiveConnectedAccounts, getOrCreateAgentSession } from "@/lib/get-agent-composio-session";
 import { getOwnedAgent } from "@/lib/get-owned-agent";
 import { logger } from "@/lib/logger";
@@ -64,7 +64,7 @@ export async function DELETE(req: NextRequest) {
         }
 
         const compositonSessionId = agentConfig.composioSessionId;
-        const session = await composio.use(compositonSessionId ?? '')
+        const session = await getComposio().use(compositonSessionId ?? '')
         const toolKits = await session.toolkits();
         const toolKit = toolKits.items.find((item: any) => item.slug.toLowerCase() === toolSlug.toLowerCase());
         const sessionConnectedAccountId = toolKit?.connection?.connectedAccount?.id ?? null;
@@ -73,7 +73,7 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: 'Connection Not Found' }, { status: 404 })
         }
 
-        await composio.connectedAccounts.delete(sessionConnectedAccountId);
+        await getComposio().connectedAccounts.delete(sessionConnectedAccountId);
         return NextResponse.json({ success: true })
     } catch (e) {
         logger.error({ err: e instanceof Error ? e.message : String(e) }, 'tool disconnect failed');

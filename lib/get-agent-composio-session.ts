@@ -2,7 +2,7 @@
  * Composio session helper sessions.
  */
 import { CreatedAgentType } from "@/components/custom/agents/CreateAgent";
-import { composio } from "./composio";
+import { getComposio } from "./composio";
 import { AgentConfig, db } from "@/db";
 import { eq } from "drizzle-orm";
 import { logFor } from "./logger";
@@ -11,12 +11,12 @@ export async function getOrCreateAgentSession(agentConfig: CreatedAgentType, use
 
     // Persisted session IDs let edits/runs reuse toolkit authorization state.
     if (agentConfig?.composioSessionId) {
-        return composio.use(agentConfig?.composioSessionId)
+        return getComposio().use(agentConfig?.composioSessionId)
     }
 
     // Attach any already-authorized accounts that match the agent's selected toolkits.
     const connectedAccounts = await getActiveConnectedAccounts(userEmail, agentConfig.tools);
-    const session = await composio.sessions.create(userEmail, {
+    const session = await getComposio().sessions.create(userEmail, {
         toolkits: agentConfig.tools,
         connectedAccounts
     })
@@ -29,7 +29,7 @@ export async function getOrCreateAgentSession(agentConfig: CreatedAgentType, use
 }
 
 export const getActiveConnectedAccounts = async (userEmail: string, toolSlugs: string[]) => {
-    const accounts = await composio.connectedAccounts.list({
+    const accounts = await getComposio().connectedAccounts.list({
         userIds: [userEmail],
         toolkitSlugs: toolSlugs,
         statuses: ['ACTIVE']
