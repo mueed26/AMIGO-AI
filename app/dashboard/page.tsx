@@ -49,7 +49,7 @@ function DashboardPage() {
         const completed = agentRunList.filter((run) => run.status == "completed")
         const running = agentRunList.filter((run) => run.status == "running" || run.status == "queued")
         const scheduled = agentRunList.filter((run) => run.status == "scheduled")
-        const attention = agentRunList.filter((run) => run.status == "failed")
+        const attention = agentRunList.filter((run) => run.status == "failed" || run.status == "blocked")
 
         return {
             completed,

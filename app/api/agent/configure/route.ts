@@ -11,6 +11,7 @@ import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { calculateNextDailyRun } from "@/lib/agent-schedule";
 import { getOwnedAgent } from "@/lib/get-owned-agent";
 import { logFor, logger } from "@/lib/logger";
+import { screenTask } from "@/lib/guardrails";
 
 export async function POST(req: NextRequest) {
 
@@ -29,6 +30,13 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.GOOGLE_CLOUD_GEMINI_API_KEY;
 
     try {
+
+        // Screen the request with the safety judge first, so an unsafe agent is never generated or saved.
+        const verdict = await screenTask(prompt);
+        if (!verdict.is_safe) {
+            logger.warn({ userEmail, category: verdict.category }, 'agent creation blocked by guardrail');
+            return NextResponse.json({ error: `Can't build this agent: ${verdict.reason}`, guardrail: verdict }, { status: 400 })
+        }
 
         // Send only the tool metadata Gemini needs for planning; credentials and
         // connected-account details stay server-side.

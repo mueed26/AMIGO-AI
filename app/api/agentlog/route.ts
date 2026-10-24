@@ -17,6 +17,7 @@ export async function GET(req: NextRequest) {
         status: AgentRun.status,
         output: AgentRun.output,
         error: AgentRun.error,
+        guardrail: AgentRun.guardrail,
         scheduledFor: AgentRun.scheduledFor,
         completedAt: AgentRun.completedAt,
         createdAt: AgentRun.createdAt,

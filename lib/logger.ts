@@ -4,10 +4,11 @@ import pino from "pino";
 export const logger = pino({
     level: process.env.LOG_LEVEL ?? "info",
     // Added to every line: which service wrote it and which container/pod it ran in.
-    // Kubernetes sets HOSTNAME to the pod name, so you can tell replicas apart.
+    // POD_NAME is set by Kubernetes (see the deployment manifests); HOSTNAME is the fallback outside k8s.
+    // HOSTNAME alone isn't enough because the Docker image sets it to 0.0.0.0 so Next.js listens on all interfaces.
     base: {
         service: process.env.SERVICE_NAME ?? "amigo-web",
-        pod: process.env.HOSTNAME,
+        pod: process.env.POD_NAME ?? process.env.HOSTNAME,
     },
     timestamp: pino.stdTimeFunctions.isoTime,
     // Never print secrets, even if someone logs a whole object by mistake.

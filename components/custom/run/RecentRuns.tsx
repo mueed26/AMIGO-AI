@@ -27,7 +27,7 @@ function RecentRuns({ agentRunList, loading }: Props) {
 
     const renderStatus = (status: string) => {
         const tone = status == 'completed' ? 'border-ok/30 text-ok' :
-            status == 'failed' ? 'border-fail/30 text-fail' :
+            status == 'failed' || status == 'blocked' ? 'border-fail/30 text-fail' :
                 status == 'scheduled' ? 'border-border text-muted-foreground' :
                     'border-run/30 text-run'
         return (
@@ -70,7 +70,12 @@ function RecentRuns({ agentRunList, loading }: Props) {
                             <TableRow key={index}>
                                 <TableCell className="px-4 py-4 font-medium">{run?.name}</TableCell>
                                 <TableCell className='max-w-[260px] truncate text-muted-foreground'>{run.task}</TableCell>
-                                <TableCell>{renderStatus(run.status)}</TableCell>
+                                <TableCell>
+                                    <div className='flex items-center gap-1.5'>
+                                        {renderStatus(run.status)}
+                                        {run.guardrail?.status == 'flagged' && <span className='rounded border border-signal/30 px-1.5 py-0.5 font-mono text-[11px] text-signal'>flagged</span>}
+                                    </div>
+                                </TableCell>
                                 <TableCell className='font-mono text-xs text-muted-foreground'>{run.completedAt ? moment(run.completedAt).fromNow() : moment(run.createdAt).fromNow()}</TableCell>
                                 <TableCell className='pr-4 text-right'>
                                     <Button variant="link" className="h-auto px-0 text-signal" onClick={() => setSelectedRun(run)}>

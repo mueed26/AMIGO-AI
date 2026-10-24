@@ -6,7 +6,7 @@ import React from "react"
 import moment from "moment"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
-import { Bot, CalendarCheck, CircleAlert, ClipboardList } from "lucide-react"
+import { Bot, CalendarCheck, CircleAlert, ClipboardList, ShieldCheck } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export type AgentRunResult = {
@@ -16,6 +16,7 @@ agentId: string
     status: string
     output: any
     error: any
+    guardrail?: any
     scheduledFor?: string
     completedAt: string | null
     createdAt: string
@@ -83,6 +84,8 @@ function AgentRunResultDialog({ run, open, onOpenChange }: Props) {
                         </section>
                     )}
 
+                    {run?.guardrail && <SafetyReview guardrail={run.guardrail} />}
+
                     <section>
                         <h3 className="label-mono mb-3">Handed back</h3>
                         {hasOutput ? (
@@ -118,13 +121,53 @@ function AgentRunResultDialog({ run, open, onOpenChange }: Props) {
 
 function StatusBadge({ status }: { status: string }) {
     const tone = status == "completed" ? "border-ok/30 text-ok" :
-        status == "failed" ? "border-fail/30 text-fail" :
+        status == "failed" || status == "blocked" ? "border-fail/30 text-fail" :
             status == "scheduled" ? "border-border text-muted-foreground" :
                 "border-run/30 text-run"
     return (
         <span className={`rounded border px-1.5 py-0.5 font-mono text-[11px] ${tone}`}>
             {status}
         </span>
+    )
+}
+
+// Shows what the LLM judges decided for this run: passed, flagged or blocked, and why.
+function SafetyReview({ guardrail }: { guardrail: any }) {
+    const tone = guardrail.status == "blocked" ? "border-fail/30 bg-fail/5 text-fail" :
+        guardrail.status == "flagged" ? "border-signal/30 bg-signal/5 text-signal" :
+            "border-ok/30 bg-ok/5 text-ok"
+    const input = guardrail.input
+    const output = guardrail.output
+    const checks = [
+        { label: "Toxicity", hit: input?.is_toxic },
+        { label: "Prompt injection", hit: input?.is_prompt_injection || output?.followed_injected_instructions },
+        { label: "Sensitive PII", hit: input?.contains_sensitive_pii || output?.leaks_secrets_or_pii || guardrail.redacted?.length > 0 },
+        { label: "Harmful action", hit: input?.is_harmful_action },
+        { label: "Unsupported claims", hit: output?.unsupported_claims },
+    ]
+    const reason = (guardrail.blockedBy == "output" ? output?.reason : input?.reason) || output?.reason
+
+    return (
+        <section className={`mb-5 rounded-lg border p-4 ${tone}`}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="label-mono flex items-center gap-2 text-current">
+                    <ShieldCheck className="size-3.5" />
+                    Safety review · {guardrail.status}
+                </div>
+                <span className="font-mono text-[11px] text-muted-foreground">
+                    judge: {guardrail.judgeModel}{output?.adherence_score ? ` · on-task ${output.adherence_score}/5` : ""}
+                </span>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+                {checks.map((check) => (
+                    <span key={check.label} className={`rounded border px-1.5 py-0.5 font-mono text-[11px] ${check.hit ? "border-fail/40 text-fail" : "border-border text-muted-foreground"}`}>
+                        {check.hit ? "✕" : "✓"} {check.label}
+                    </span>
+                ))}
+            </div>
+            {reason && <p className="mt-3 text-sm text-foreground/90">{reason}</p>}
+            {guardrail.redacted?.length > 0 && <p className="mt-2 font-mono text-xs text-muted-foreground">redacted: {guardrail.redacted.join(", ")}</p>}
+        </section>
     )
 }
 

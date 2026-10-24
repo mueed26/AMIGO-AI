@@ -86,6 +86,8 @@ export const AgentRun = pgTable(
       .notNull(),
 
     output: jsonb("output"),
+    // LLM-as-judge verdicts for this run: passed / flagged / blocked, with the reasons.
+    guardrail: jsonb("guardrail"),
     error: text("error"),
 
     queuedAt: timestamp("queued_at", {

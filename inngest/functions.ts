@@ -228,16 +228,19 @@ If the objective mentions daily, recurring, schedule, or a time, treat that only
                 return result;
             });
 
-            // Step 6: Persist the successful output back to the AgentRun row.
+            // Step 6: Save the output and guardrail verdict. A guardrail stop is "blocked", not "failed".
             await step.run(`mark-run-completed-${run.id}`, async () => {
                 await db
                     .update(AgentRun)
                     .set({
-                        status: "completed",
-                        output,
+                        status: output.blocked ? "blocked" : "completed",
+                        output: { finalOutput: output.finalOutput },
+                        guardrail: output.guardrail,
                         completedAt: new Date(),
                     })
                     .where(eq(AgentRun.id, run.id));
+                const runLog = logFor({ runId: run.id, agentId: run.agentId, guardrail: output.guardrail.status })
+                if (output.blocked) runLog.warn({ blockedBy: output.guardrail.blockedBy }, "run blocked by guardrail")
             });
 
             const schedule = agentConfig.schedule as {
