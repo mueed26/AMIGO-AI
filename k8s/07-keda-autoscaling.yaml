@@ -1,0 +1,50 @@
+# Queue-depth autoscaling for the worker, using KEDA (install KEDA in the cluster before applying this file).
+# CPU is a poor signal for agent workers: runs mostly wait on OpenAI/Gmail/Docs, so CPU stays low even when the queue is full.
+# Instead KEDA counts active runs in Postgres and sizes the worker Deployment to match.
+
+# How KEDA logs in to Postgres: reuse DATABASE_URL from the existing Secret, without copying it anywhere.
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: amigo-postgres
+  namespace: amigo
+  labels:
+    app.kubernetes.io/part-of: amigo-ai
+spec:
+  secretTargetRef:
+    - parameter: connection
+      name: amigo-secrets
+      key: DATABASE_URL
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: amigo-worker-scaler
+  namespace: amigo
+  labels:
+    app.kubernetes.io/part-of: amigo-ai
+spec:
+  # The Deployment KEDA controls. KEDA creates and manages an HPA for it behind the scenes.
+  scaleTargetRef:
+    name: amigo-worker
+  # Always keep one worker so Inngest has something to call; never more than 5.
+  minReplicaCount: 1
+  maxReplicaCount: 5
+  # Check the queue every 15 seconds.
+  pollingInterval: 15
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        # Wait 60 s of a smaller queue before removing workers, so a short lull doesn't kill pods mid-run.
+        scaleDown:
+          stabilizationWindowSeconds: 60
+  triggers:
+    - type: postgresql
+      metadata:
+        # Queue depth = runs waiting for a worker or being worked on right now.
+        query: SELECT COUNT(*) FROM "agentRun" WHERE status IN ('queued', 'running')
+        # Aim for one active run per worker pod: 3 active runs -> 3 workers (capped at 5).
+        targetQueryValue: "1"
+        activationTargetQueryValue: "0"
+      authenticationRef:
+        name: amigo-postgres

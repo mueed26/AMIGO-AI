@@ -1,0 +1,27 @@
+# Ingress: the front door. Sends http://amigo.localhost to the web Service.
+# Needs an Ingress Controller running in the cluster; on minikube that's the NGINX addon (minikube addons enable ingress).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: amigo
+  namespace: amigo
+  labels:
+    app.kubernetes.io/part-of: amigo-ai
+  annotations:
+    # Chat runs the agent inside the request and can take a minute or more; NGINX's default is 60 s.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  ingressClassName: nginx
+  rules:
+    # Browsers send *.localhost to 127.0.0.1, which minikube tunnel forwards into the cluster.
+    - host: amigo.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: amigo-web
+                port:
+                  name: http

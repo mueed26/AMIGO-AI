@@ -1,0 +1,8 @@
+# A namespace is a folder inside the cluster. Everything for AMIGO lives in "amigo",
+# so it's kept apart from Kubernetes' own system pods and easy to delete in one go.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: amigo
+  labels:
+    app.kubernetes.io/part-of: amigo-ai

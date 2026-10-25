@@ -46,6 +46,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
+# Maintenance scripts run by Kubernetes Jobs (e.g. the stuck-run cleanup CronJob).
+# The Neon driver is copied in directly because the standalone build may bundle it instead of keeping it in node_modules.
+COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@neondatabase ./node_modules/@neondatabase
+
 USER nextjs
 EXPOSE 3000
 

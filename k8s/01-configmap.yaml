@@ -1,0 +1,17 @@
+# ConfigMap: non-secret settings shared by the web and worker pods.
+# Secrets (API keys, DATABASE_URL) are NOT here. They go in the "amigo-secrets" Secret, created from .env.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: amigo-config
+  namespace: amigo
+  labels:
+    app.kubernetes.io/part-of: amigo-ai
+data:
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  NEXT_TELEMETRY_DISABLED: "1"
+  # The in-cluster Inngest server, found by its Service name (Kubernetes DNS: <service>.<namespace>.svc.cluster.local).
+  INNGEST_DEV: "http://inngest.amigo.svc.cluster.local:8288"
+  # Node's fetch gives each server address only 250 ms by default; reaching Neon from inside the cluster takes longer.
+  NODE_OPTIONS: "--network-family-autoselection-attempt-timeout=3000"
