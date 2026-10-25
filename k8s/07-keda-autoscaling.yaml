@@ -30,8 +30,8 @@ spec:
   # Always keep one worker so Inngest has something to call; never more than 5.
   minReplicaCount: 1
   maxReplicaCount: 5
-  # Check the queue every 15 seconds.
-  pollingInterval: 15
+  # No pollingInterval: with minReplicaCount 1, the HPA asks KEDA for the queue count on its own ~15 s loop.
+  # (pollingInterval only matters when scaling to zero.)
   advanced:
     horizontalPodAutoscalerConfig:
       behavior:
