@@ -2,7 +2,7 @@
 import { CreatedAgentType } from "@/components/custom/agents/CreateAgent";
 import { getOrCreateAgentSession } from "./get-agent-composio-session";
 import { Agent } from "@openai/agents";
-import { browserbaseResearchTool } from "./browserbase-tool";
+import { webResearchTools } from "./browserbase-tool";
 import { resultGuardrail, taskGuardrail } from "./guardrails";
 
 
@@ -26,11 +26,11 @@ export async function buildAgent(agentConfig: CreatedAgentType,
     Skills:
     ${(agentConfig.skills ?? []).join(', ')}
     
-    Browser Research Rules:
-- Use browser_research when the user explicitly asks to search or browse the internet.
-- Use browser_research for current prices, availability, comparisons, news, and other live facts.
-- Do not claim that pricing is current unless browser_research verified it.
-- Include the source URLs returned by browser_research in the final answer.
+    Web Research Rules:
+- Use web_search to find current news, prices, availability, comparisons and other live facts.
+- Then use fetch_page to read the most relevant results before relying on them.
+- Do not claim that pricing or news is current unless you found it with these tools.
+- Include the source URLs you actually read in the final answer.
 - Clearly distinguish verified facts from conclusions or recommendations.
 - Browser research is read-only. Never use it to purchase, log in, submit forms,
   upload files, download files, or modify external systems.
@@ -49,7 +49,7 @@ export async function buildAgent(agentConfig: CreatedAgentType,
         name: agentConfig.name,
         model: process.env.OPENAI_MODEL,
         instructions,
-        tools: [...composioTools, browserbaseResearchTool],
+        tools: [...composioTools, ...webResearchTools],
         // LLM-as-judge checks: screen the task before any tool runs, review the answer before it's returned.
         inputGuardrails: [taskGuardrail],
         outputGuardrails: [resultGuardrail],

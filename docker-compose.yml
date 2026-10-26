@@ -11,7 +11,7 @@ services:
         # Public browser values, read from .env and baked in at build time.
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
-    image: amigo-ai:1.1.0
+    image: amigo-ai:1.2.1
     env_file: .env
     environment:
       SERVICE_NAME: amigo-web
@@ -33,7 +33,7 @@ services:
   # The worker: same image, but this is the copy Inngest calls to actually run agents.
   # No public port, only reachable inside the Docker network.
   worker:
-    image: amigo-ai:1.1.0
+    image: amigo-ai:1.2.1
     pull_policy: never
     env_file: .env
     environment:

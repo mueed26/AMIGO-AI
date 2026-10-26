@@ -37,7 +37,7 @@ spec:
           containers:
             - name: cleanup
               # Same image as the app, running a script instead of the web server.
-              image: amigo-ai:1.1.0
+              image: amigo-ai:1.2.1
               imagePullPolicy: IfNotPresent
               command: ["node", "scripts/cleanup-stuck-runs.mjs"]
               envFrom:

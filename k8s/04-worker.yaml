@@ -37,7 +37,7 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
         - name: worker
-          image: amigo-ai:1.1.0
+          image: amigo-ai:1.2.1
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

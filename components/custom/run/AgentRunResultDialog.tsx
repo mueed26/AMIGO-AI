@@ -166,7 +166,7 @@ function SafetyReview({ guardrail }: { guardrail: any }) {
                 ))}
             </div>
             {reason && <p className="mt-3 text-sm text-foreground/90">{reason}</p>}
-            {guardrail.redacted?.length > 0 && <p className="mt-2 font-mono text-xs text-muted-foreground">redacted: {guardrail.redacted.join(", ")}</p>}
+            {guardrail.redacted?.length > 0 && <p className="mt-2 font-mono text-xs text-muted-foreground">redacted: {(guardrail.redactedPreview?.length ? guardrail.redactedPreview : guardrail.redacted).join(", ")}</p>}
         </section>
     )
 }

@@ -10,7 +10,7 @@
 
 - 🧠 **Prompt-to-agent generation.** Google Gemini reads the request, picks the tools it needs, asks follow-up questions when something is vague, and returns a full agent config (instructions, goal, schedule, output format) as structured JSON.
 - 🔌 **Real app integrations.** [Composio](https://composio.dev/) handles OAuth per user. Each agent gets a session scoped to only the apps its job needs (Gmail, Slack, Notion, Google Docs/Sheets/Calendar, GitHub, LinkedIn, Outlook and more).
-- 🌐 **Live web research.** A [Browserbase](https://www.browserbase.com/) tool lets agents check current prices, news and facts. It's read-only and agents must cite their sources.
+- 🌐 **Live web research.** Two read-only [Browserbase](https://www.browserbase.com/) tools, `web_search` and `fetch_page`, let agents find current news, prices and facts, read the pages, and cite their sources.
 - 🛡️ **LLM-as-judge guardrails.** A `gpt-4o-mini` judge screens every task **before** any tool runs (toxicity, prompt injection, sensitive PII, harmful actions) and reviews every answer **after** (leaked secrets, indirect prompt injection, unsupported claims, an on-task score). Plus regex secret detection with automatic redaction.
 - ⏰ **Background jobs and scheduling.** [Inngest](https://www.inngest.com/) queues runs, retries failed steps, sleeps until the exact scheduled time, and chains the next daily run. An atomic status update stops the same run from being executed twice.
 - 📦 **Containerized.** A multi-stage, non-root Docker image runs as two services, **web** (UI + API) and **worker** (agent execution), plus a self-hosted Inngest server.
@@ -36,7 +36,7 @@ flowchart LR
     K1 --> G{{Guardrails: input judge}}
     G --> AG[OpenAI Agents SDK]
     AG --> CMP[Composio: Gmail, Docs, Slack...]
-    AG --> BB[Browserbase web research]
+    AG --> BB[Browserbase search + fetch]
     AG --> G2{{Guardrails: output judge}}
 
     W1 & K1 --> DB[(Neon Postgres)]
@@ -144,7 +144,7 @@ cp .env.example .env
 | `OPENAI_API_KEY`, `OPENAI_MODEL` | Runs agents (e.g. `gpt-4o-mini`) |
 | `JUDGE_MODEL` | Guardrail judge model (default `gpt-4o-mini`) |
 | `COMPOSIO_API_KEY` | App integrations |
-| `BROWSERBASE_API_KEY`, `BROWSERBASE_AGENT_ID` | Web research tool |
+| `BROWSERBASE_API_KEY` | Web research tools (Search + Fetch) |
 | `INNGEST_DEV` | `1` for local dev (overridden in Docker/Kubernetes) |
 | `LOG_LEVEL` | `info` by default |
 
@@ -180,7 +180,7 @@ minikube addons enable metrics-server
 
 # Build the image and load it into the cluster
 docker compose build web
-minikube image load amigo-ai:1.1.0
+minikube image load amigo-ai:1.2.1
 
 # KEDA (queue-depth autoscaling)
 kubectl apply --server-side -f https://github.com/kedacore/keda/releases/download/v2.21.0/keda-2.21.0.yaml

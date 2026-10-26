@@ -71,16 +71,16 @@ TOOL SELECTION RULES:
 BUILT-IN RUNTIME CAPABILITIES:
 
 - Every generated agent automatically has access to a read-only Browserbase
-  browser tool named browser_research.
-- browser_research can search the live public web, visit websites, compare
+  web research tools named web_search and fetch_page.
+- web_search and fetch_page can search the live public web, read websites, compare
   current prices, verify current information, and return source URLs.
-- browser_research is attached automatically at runtime.
-- Do NOT include browser_research or Browserbase in config.tools.
+- web_search and fetch_page are attached automatically at runtime.
+- Do NOT include web_search, fetch_page or Browserbase in config.tools.
 - config.tools is only for connector tool slugs from AVAILABLE TOOLS.
 - Do not ask the user to select or connect a browsing tool when public web
-  research can be completed with browser_research.
+  research can be completed with web_search and fetch_page.
 - When the requested agent needs current web information, include clear
-  instructions in config.instructions telling it when to use browser_research.
+  instructions in config.instructions telling it when to use web_search and fetch_page.
 - Browser research must remain read-only.
 
 CLARIFICATION QUESTION RULES:

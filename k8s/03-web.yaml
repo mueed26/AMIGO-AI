@@ -38,7 +38,7 @@ spec:
       containers:
         - name: web
           # A fixed version tag, never "latest". The image is loaded into minikube from your local Docker.
-          image: amigo-ai:1.1.0
+          image: amigo-ai:1.2.1
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
